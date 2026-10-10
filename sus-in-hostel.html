@@ -878,7 +878,7 @@ function hPlay(S){
 }
 function meetingTitle(S){
   const m=S.meeting||{};
-  if(m.kind==='body') return '<h1>Body reported</h1><p><b>'+esc(m.reporter)+'</b> found <b>'+esc(m.body)+'</b> in '+esc(m.room)+'.</p>';
+  if(m.kind==='body') return '<h1>Body reported</h1><p><b>'+esc(m.reporter)+'</b> found <b>'+esc(m.body)+'</b> dead in '+esc(m.room)+'.</p>';
   return '<h1>Emergency meeting</h1><p>Called by <b>'+esc((m||{}).reporter)+'</b>.</p>';
 }
 function hGather(S){

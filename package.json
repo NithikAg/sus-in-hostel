@@ -1,0 +1,8 @@
+{
+  "name": "sus-in-hostel",
+  "version": "1.0.0",
+  "description": "Real-life imposter game console for a hostel",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}

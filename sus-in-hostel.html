@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Sus in Hostel – real-life imposter game console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<style>
+:root{
+  --hull:#0b1020; --hull2:#10172c; --panel:#151e38; --panel2:#1c2748; --line:#2a3862;
+  --text:#eaf0ff; --mute:#8f9cc0; --crew:#5ce1e6; --signal:#ff4d5e; --hazard:#ffc933; --ok:#4fe39a;
+  --font:'Chakra Petch',system-ui,-apple-system,Segoe UI,sans-serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace; --display:'Bungee','Chakra Petch',sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--hull);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.45}
+body{
+  background:
+   linear-gradient(rgba(92,225,230,.035) 1px,transparent 1px) 0 0/44px 44px,
+   linear-gradient(90deg,rgba(92,225,230,.035) 1px,transparent 1px) 0 0/44px 44px,
+   radial-gradient(900px 520px at 85% -10%,rgba(92,225,230,.13),transparent 70%),
+   radial-gradient(800px 500px at -10% 110%,rgba(255,77,94,.12),transparent 70%),
+   var(--hull);
+  background-attachment:fixed;
+}
+button,input,select{font:inherit;color:inherit}
+h1,h2,h3{margin:0;font-weight:700}
+small{color:var(--mute);display:block;font-weight:400}
+code{font-family:var(--mono)}
+:focus-visible{outline:2px solid var(--crew);outline-offset:2px}
+#app{max-width:1000px;margin:0 auto;padding:16px 14px 120px}
+.client #app{max-width:640px}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px 16px}
+.brand{font-family:var(--display);font-size:22px;letter-spacing:.5px;line-height:1}
+.brand i{font-style:normal;color:var(--signal)}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--hull2);font-size:13px;color:var(--mute)}
+.dot{width:10px;height:10px;border-radius:50%;background:#555e7d;display:inline-block;flex:none}
+.dot.on{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.dot.warn{background:var(--hazard)}
+
+/* surfaces */
+.card{background:linear-gradient(180deg,var(--panel),var(--hull2));border:1px solid var(--line);border-radius:6px 18px 6px 18px;padding:16px;margin-bottom:14px}
+.card h3{font-size:18px;margin-bottom:4px}
+.card>p{color:var(--mute);margin:2px 0 12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid rgba(42,56,98,.7)}
+.row:first-of-type{border-top:0}
+.row b{font-weight:600}
+.row.dev{justify-content:flex-start}
+.row.dev select{margin-left:auto}
+
+/* tabs */
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.tab{flex:1 0 auto;padding:11px 16px;border:1px solid var(--line);background:var(--hull2);border-radius:10px;cursor:pointer;font-weight:600;color:var(--mute);white-space:nowrap}
+.tab.on{background:var(--crew);color:#04222a;border-color:var(--crew)}
+
+/* controls */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);font-weight:700;cursor:pointer;min-height:48px;transition:transform .08s,filter .15s}
+.btn:active{transform:scale(.97)}
+.btn:hover{filter:brightness(1.12)}
+.btn.primary{background:var(--crew);color:#04222a;border-color:var(--crew)}
+.btn.danger{background:var(--signal);color:#2b0309;border-color:var(--signal)}
+.btn.hazard{background:var(--hazard);color:#2a2000;border-color:var(--hazard)}
+.btn.ghost{background:transparent}
+.btn.big{padding:18px 24px;font-size:18px;min-height:60px}
+.btn.block{display:flex;width:100%}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.sb{width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);font-size:20px;font-weight:700;cursor:pointer}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper span{min-width:44px;text-align:center;font-family:var(--mono);font-size:20px;font-weight:700}
+.sw{width:56px;height:32px;border-radius:999px;border:1px solid var(--line);background:var(--hull);position:relative;cursor:pointer;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--mute);transition:left .15s,background .15s}
+.sw.on{background:rgba(92,225,230,.2);border-color:var(--crew)}
+.sw.on::after{left:27px;background:var(--crew)}
+input,select{background:var(--hull);border:1px solid var(--line);border-radius:10px;padding:12px 13px;min-height:46px;width:100%;color:var(--text)}
+select{width:auto;max-width:55%}
+input::placeholder{color:#5f6c92}
+.form{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-items:end;margin-bottom:10px}
+.form label{display:grid;gap:5px;font-size:13px;color:var(--mute)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--hull2);font-weight:600}
+.chip.dead{opacity:.45;text-decoration:line-through}
+.chip.seen{border-color:var(--ok);color:var(--ok)}
+.chip.voted{border-color:var(--hazard);color:var(--hazard)}
+.chip button{border:0;background:none;color:var(--mute);cursor:pointer;font-size:16px;padding:0 2px}
+.tag{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mute);white-space:nowrap}
+.tag.here{color:var(--crew);border-color:var(--crew)}
+.note{padding:12px 14px;border-radius:10px;background:rgba(255,201,51,.1);border:1px solid rgba(255,201,51,.45);color:#ffe08a;margin-bottom:12px}
+.err{color:var(--signal);font-weight:600;margin:8px 0 0}
+.empty{color:var(--mute);padding:10px 0}
+.linkbox{display:flex;gap:8px;align-items:center;background:var(--hull);border:1px dashed var(--crew);border-radius:10px;padding:10px}
+.linkbox code{flex:1;word-break:break-all;font-size:14px;color:var(--crew)}
+.qr{background:#fff;padding:10px;border-radius:12px;width:170px;height:170px;margin:12px 0 0}
+.qr svg{width:100%;height:100%;display:block}
+
+/* start bar */
+.startbar{position:fixed;left:0;right:0;bottom:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,var(--hull) 30%);z-index:5}
+.startbar .in{max-width:1000px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.startbar small{font-size:13px}
+
+/* game screens */
+.hero{border-radius:6px 24px 6px 24px;padding:22px;margin-bottom:14px;border:1px solid var(--line);background:var(--panel)}
+.hero h1{font-family:var(--display);font-size:clamp(28px,7vw,52px);line-height:1.05;letter-spacing:.5px}
+.hero p{margin:8px 0 0;font-size:18px}
+.hero.red{background:linear-gradient(135deg,#4a0a14,#1c0610);border-color:var(--signal)}
+.hero.red h1{color:var(--signal)}
+.hero.crew{background:linear-gradient(135deg,#0b3a42,#0a1a2a);border-color:var(--crew)}
+.hero.crew h1{color:var(--crew)}
+.hero.gold{background:linear-gradient(135deg,#40320a,#1a1406);border-color:var(--hazard)}
+.hero.gold h1{color:var(--hazard)}
+.timer{font-family:var(--mono);font-size:clamp(40px,12vw,84px);font-weight:700;line-height:1}
+.bar{height:16px;border-radius:999px;background:var(--hull);border:1px solid var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--crew),var(--ok));transition:width .5s}
+.alarm{border:2px solid var(--signal);background:linear-gradient(135deg,#4d0b16,#210711);border-radius:6px 20px 6px 20px;padding:16px;margin-bottom:14px;animation:pulse 1s infinite}
+.alarm h2{font-family:var(--display);color:var(--signal);font-size:24px}
+.alarm .timer{font-size:48px;color:#fff;margin-top:6px}
+.fixcode{font-family:var(--mono);font-weight:700;font-size:clamp(36px,11vw,64px);letter-spacing:.12em;text-align:center;background:var(--hull);border:2px dashed var(--hazard);border-radius:12px;padding:12px;margin:10px 0;color:var(--hazard)}
+.roomhd{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;color:var(--mute)}
+.roomhd b{color:var(--text);font-size:20px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.actions .btn{flex-direction:column;padding:20px 10px;min-height:92px;font-size:17px}
+.actions .btn span{font-size:28px}
+.task{display:flex;gap:12px;align-items:center;padding:14px 4px;border-top:1px solid rgba(42,56,98,.7);cursor:pointer}
+.task:first-child{border-top:0}
+.task .box{width:30px;height:30px;border-radius:8px;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-weight:800;color:#04222a}
+.task.done .box{background:var(--ok);border-color:var(--ok)}
+.task.done .nm{text-decoration:line-through;color:var(--mute)}
+.task .nm{flex:1;font-weight:600}
+.codein{font-family:var(--mono);font-size:26px;letter-spacing:.2em;text-align:center}
+.pick{display:grid;gap:8px}
+.big-center{text-align:center;padding:30px 10px}
+.center-note{font-size:20px;color:var(--mute)}
+.mates{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.mates .chip{border-color:var(--signal);color:var(--signal)}
+.result-row{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid rgba(42,56,98,.7)}
+
+/* siren overlay */
+#siren{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:0}
+#siren.meeting,#siren.sab{opacity:1;animation:flash .8s infinite;box-shadow:inset 0 0 0 10px var(--signal),inset 0 0 120px 20px rgba(255,77,94,.55)}
+#siren.sab{animation-duration:.5s}
+@keyframes flash{0%,100%{opacity:.15}50%{opacity:1}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,77,94,.0)}50%{box-shadow:0 0 22px 2px rgba(255,77,94,.5)}}
+@media(prefers-reduced-motion:reduce){#siren.meeting,#siren.sab{animation:none;opacity:.6}.alarm{animation:none}}
+#toasts{position:fixed;left:50%;transform:translateX(-50%);top:12px;z-index:100;display:grid;gap:8px;width:min(92vw,460px)}
+.toast{background:var(--panel2);border:1px solid var(--line);padding:12px 14px;border-radius:12px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.toast.bad{border-color:var(--signal);color:#ffb3bb}
+.toast.good{border-color:var(--ok);color:#b9f7d8}
+.foot{margin-top:24px;text-align:center;color:var(--mute);font-size:13px}
+.foot button{background:none;border:0;color:var(--mute);text-decoration:underline;cursor:pointer}
+
+/* ---- sabotage corner alert, puzzles, long tasks, comms blackout ---- */
+.corner{position:fixed;right:14px;bottom:14px;width:min(340px,calc(100vw - 28px));z-index:40;background:linear-gradient(135deg,#4d0b16,#210711);border:2px solid var(--signal);border-radius:6px 18px 6px 18px;padding:12px 14px;box-shadow:0 10px 40px rgba(0,0,0,.6);animation:pulse 1s infinite}
+.corner .chd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.corner .chd b{font-family:var(--display);color:var(--signal);font-size:16px;line-height:1.2}
+.corner .timer{font-size:26px}
+.corner .chips{margin-top:8px}
+.corner .chip{padding:4px 10px;font-size:13px}
+@media(max-width:720px){body.has-corner #app{padding-bottom:240px}}
+.deadscreen{text-align:center;padding:46px 12px}
+.deadscreen .big{font-size:64px;filter:grayscale(1);opacity:.7}
+.deadscreen h2{font-family:var(--display);color:var(--signal);font-size:26px;margin:8px 0}
+.deadscreen p{color:var(--mute);font-size:18px;margin:6px 0}
+.ltask{border-top:1px solid rgba(42,56,98,.7);padding-top:6px}
+.ltask:first-of-type{border-top:0}
+.ltask .lhd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 4px 0}
+.task.sub{padding-left:18px;border-top:0}
+.task .nm small{margin-top:2px}
+.okmsg{color:var(--ok);font-weight:700;margin:8px 0 0}
+#puzzle{position:fixed;inset:0;z-index:60;background:rgba(5,8,18,.94);display:none;overflow:auto;padding:14px}
+#puzzle.on{display:grid;place-items:center}
+.pzcard{width:min(540px,100%);background:linear-gradient(180deg,var(--panel),var(--hull2));border:1px solid var(--crew);border-radius:6px 20px 6px 20px;padding:16px}
+.wires{position:relative;display:flex;justify-content:space-between;padding:6px 18px;min-height:300px}
+.wires svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.wcol{display:flex;flex-direction:column;justify-content:space-around;gap:16px;z-index:1}
+.wnode{width:58px;height:58px;border-radius:50%;border:4px solid rgba(255,255,255,.25);cursor:pointer;padding:0}
+.wnode.sel{border-color:#fff;transform:scale(1.15)}
+.wnode.on{border-color:#fff;opacity:.9;pointer-events:none}
+.wnode.shake{animation:shake .35s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.dustfield{position:relative;height:300px;border-radius:14px;border:1px solid var(--line);overflow:hidden;touch-action:none;cursor:crosshair;background:radial-gradient(circle at 30% 30%,#2a3350,#0e1426)}
+.dust{position:absolute;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(190,160,110,.95),rgba(110,100,80,.45) 70%,transparent);filter:blur(1.5px);transition:opacity .25s,transform .25s}
+.dust.gone{opacity:0!important;transform:translate(-50%,-50%) scale(1.8)}
+#wvC{width:100%;height:auto;border-radius:12px;background:#070c1b;border:1px solid var(--line);display:block}
+.slab{display:grid;gap:2px;font-size:13px;color:var(--mute);margin-top:10px}
+.slab input[type=range]{padding:0;min-height:38px;border:0;background:transparent;accent-color:var(--hazard)}
+.task.locked{opacity:.45;cursor:default}
+.task.locked .box{font-size:14px;background:transparent}
+#puzzle.lock{background:#04060f;z-index:70}
+</style>
+</head>
+<body>
+<div id="toasts"></div>
+<div id="siren"></div>
+<div id="corner"></div>
+<div id="puzzle"></div>
+<main id="app"></main>
+
+<!-- ============================ GAME ENGINE (host-side rules) ============================ -->
+<script id="engine">
+const LS='sus_in_hostel_state_v1';
+function rid(n){const c='abcdefghjkmnpqrstuvwxyz23456789';let s='';for(let i=0;i<n;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
+function rand6(){return String(Math.floor(100000+Math.random()*900000));}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const ok=(data)=>({ok:true,data});
+const fail=(error)=>({ok:false,error});
+
+function defaults(){
+  return {
+    cfg:{maxPlayers:8,imposters:2,emergencyMeetings:1,tasksPerPlayer:4,discussSec:90,sabCooldown:30,
+         taskRoomLock:true,confirmEjects:false,anonymousVotes:true,showProgress:true},
+    hostRoom:'Main Hall',
+    rooms:['Kitchen','Library','Washroom','Terrace','Corridor'],
+    tasks:[
+      {id:'t1',name:'Fill the water jug',max:0,parts:[{room:'Kitchen',label:''}]},
+      {id:'t2',name:'Stack the plates',max:0,parts:[{room:'Kitchen',label:''}]},
+      {id:'t3',name:'Arrange the books by size',max:0,parts:[{room:'Library',label:''}]},
+      {id:'t4',name:'Fold the towels',max:0,parts:[{room:'Washroom',label:''}]},
+      {id:'t5',name:'Water the plants',max:0,parts:[{room:'Terrace',label:''}]},
+      {id:'t6',name:'Sweep the floor',max:0,parts:[{room:'Terrace',label:''}]},
+      {id:'t7',name:'Straighten the shoe rack',max:0,parts:[{room:'Corridor',label:''}]},
+      {id:'t8',name:'Wipe the main table',max:0,parts:[{room:'Main Hall',label:''}]},
+      {id:'t9',name:'Deliver the parcel',max:3,parts:[{room:'Kitchen',label:'Collect the parcel'},{room:'Corridor',label:'Scan it'},{room:'Library',label:'Shelve it'}]}
+    ],
+    sabotages:[
+      {id:'s1',name:'Reactor meltdown',puzzle:'code',dual:true,roomA:'Kitchen',roomB:'Terrace',seconds:90},
+      {id:'s2',name:'Oxygen leak',puzzle:'dust',dual:false,roomA:'Library',roomB:'',seconds:60},
+      {id:'s3',name:'Power surge',puzzle:'match',dual:false,roomA:'Washroom',roomB:'',seconds:75},
+      {id:'s4',name:'Communications',puzzle:'wave',dual:false,roomA:'Corridor',roomB:'',seconds:0}
+    ],
+    players:[],devices:{},devN:0,
+    phase:'lobby',meeting:null,votes:null,result:null,sab:null,sabReadyAt:0,winner:null
+  };
+}
+/* older saved setups (single-room tasks, code-only sabotages) are converted automatically */
+function migrate(g){
+  g.tasks=(g.tasks||[]).map(t=>({id:t.id,name:t.name,max:t.max||0,
+    parts:(t.parts&&t.parts.length)?t.parts.map(x=>({room:x.room,label:x.label||''})):[{room:t.room,label:''}]}));
+  g.sabotages=(g.sabotages||[]).map(s=>Object.assign({puzzle:'code'},s));
+  (g.players||[]).forEach(p=>{p.tasks=(p.tasks||[]).map(t=>t.parts?t:{tid:t.tid,name:t.name,parts:[{room:t.room,label:'',done:!!t.done}]});});
+  if(g.sab){
+    if(!g.sab.fixes) g.sab=null;
+    else{g.sab.comms=!!g.sab.comms;Object.keys(g.sab.fixes).forEach(r=>{const f=g.sab.fixes[r];f.puzzle=f.puzzle||'code';f.seed=f.seed||1;});}
+  }
+  return g;
+}
+function loadState(){
+  try{
+    const s=localStorage.getItem(LS); if(!s) return null;
+    const d=defaults(), o=JSON.parse(s);
+    const g=Object.assign(d,o); g.cfg=Object.assign(defaults().cfg,o.cfg||{}); return migrate(g);
+  }catch(e){return null;}
+}
+function saveState(){try{localStorage.setItem(LS,JSON.stringify(G));}catch(e){}}
+let G=loadState()||defaults();
+const hooks={commit:function(){}};
+function commit(){saveState();hooks.commit();}
+
+/* ---------- helpers ---------- */
+function allRooms(){return [G.hostRoom].concat(G.rooms);}
+function findByCode(code){code=String(code||'').trim().toUpperCase();return G.players.find(p=>p.code===code);}
+/* progress counts only LIVING crewmates, so a dead player's tasks vanish from the bar immediately */
+function progress(){let d=0,t=0;G.players.forEach(p=>{if(p.role==='crew'&&p.alive)p.tasks.forEach(x=>x.parts.forEach(y=>{t++;if(y.done)d++;}));});return {done:d,total:t};}
+function evaluateWin(){
+  const impA=G.players.filter(p=>p.role==='imp'&&p.alive).length;
+  const crewA=G.players.filter(p=>p.role==='crew'&&p.alive);
+  if(impA===0) return {w:'crew',why:'Every imposter has been eliminated.'};
+  if(impA>=crewA.length) return {w:'imp',why:'Imposters now equal the crewmates.'};
+  if(crewA.every(p=>p.tasks.every(t=>t.parts.every(x=>x.done)))) return {w:'crew',why:'All crewmate tasks are complete.'};
+  return null;
+}
+function endGame(w,why){G.phase='over';G.winner={w:w,why:why};G.sab=null;G.meeting=null;G.votes=null;}
+function checkWin(){
+  if(G.phase!=='play'&&G.phase!=='gather') return false;
+  const r=evaluateWin(); if(r){endGame(r.w,r.why);return true;} return false;
+}
+function resetToLobby(){
+  G.phase='lobby';G.meeting=null;G.votes=null;G.result=null;G.sab=null;G.winner=null;
+  G.players.forEach(p=>{p.role=null;p.alive=true;p.tasks=[];p.seen=false;p.reported=false;p.meetingsLeft=0;});
+}
+
+/* ---------- lobby ---------- */
+function registerPlayer(name,code){
+  name=String(name||'').trim();code=String(code||'').trim().toUpperCase();
+  if(G.phase!=='lobby') return 'Registration is only possible before the game starts.';
+  if(!name) return 'Enter a name.';
+  if(name.length>16) return 'Name is too long (max 16 characters).';
+  if(!/^[A-Z0-9]{3,6}$/.test(code)) return 'Code ID must be 3–6 letters or numbers.';
+  if(G.players.length>=G.cfg.maxPlayers) return 'Player limit reached. Raise "Max players" in Rules.';
+  if(G.players.some(p=>p.code===code)) return 'That code ID is already taken. Pick another.';
+  if(G.players.some(p=>p.name.toLowerCase()===name.toLowerCase())) return 'That name is already registered.';
+  G.players.push({id:rid(6),name:name,code:code,role:null,alive:true,reported:false,seen:false,meetingsLeft:0,tasks:[]});
+  return null;
+}
+function renameRoom(oldN,newN){
+  newN=String(newN||'').trim(); if(!newN||newN===oldN) return 'ok';
+  if(allRooms().some(r=>r.toLowerCase()===newN.toLowerCase())) return 'That room name already exists.';
+  if(G.hostRoom===oldN) G.hostRoom=newN; else G.rooms=G.rooms.map(r=>r===oldN?newN:r);
+  G.tasks.forEach(t=>t.parts.forEach(x=>{if(x.room===oldN)x.room=newN;}));
+  G.sabotages.forEach(s=>{if(s.roomA===oldN)s.roomA=newN;if(s.roomB===oldN)s.roomB=newN;});
+  Object.values(G.devices).forEach(d=>{if(d.room===oldN)d.room=newN;});
+  return 'ok';
+}
+function sabRooms(s){return (s.dual&&s.puzzle!=='wave')?[s.roomA,s.roomB]:[s.roomA];}
+function validateStart(connectedRooms){
+  const e=[],w=[],n=G.players.length;
+  if(n<3) e.push('Register at least 3 players.');
+  if(n>G.cfg.maxPlayers) e.push('There are more players than "Max players" allows.');
+  if(G.cfg.imposters<1) e.push('Set at least 1 imposter.');
+  if(G.cfg.imposters*2>=n) e.push('Too many imposters for '+n+' players. Imposters must be fewer than half.');
+  if(!G.tasks.length) e.push('Add at least one task.');
+  const valid=new Set(allRooms());
+  G.tasks.forEach(t=>{if(t.parts.some(x=>!valid.has(x.room)))e.push('Task "'+t.name+'" uses a room that no longer exists.');});
+  G.sabotages.forEach(s=>{
+    const rs=sabRooms(s);
+    if(rs.some(r=>!valid.has(r))) e.push('Sabotage "'+s.name+'" uses a room that no longer exists.');
+    if(rs.length===2&&rs[0]===rs[1]) e.push('Sabotage "'+s.name+'" needs two different rooms.');
+  });
+  const have=new Set([G.hostRoom].concat(connectedRooms||[]));
+  const need=new Set();
+  G.tasks.forEach(t=>t.parts.forEach(x=>need.add(x.room)));
+  G.sabotages.forEach(s=>sabRooms(s).forEach(r=>need.add(r)));
+  need.forEach(r=>{if(!have.has(r))w.push('No connected device is in "'+r+'".');});
+  if(!G.sabotages.length) w.push('No sabotages defined – imposters can only kill.');
+  const cap=G.tasks.reduce((s,t)=>s+Math.min(t.max||n,n)*taskCost(t),0);
+  if(cap<n*G.cfg.tasksPerPlayer) w.push('Not enough tasks (or the limits are too tight) for everyone to reach "Tasks per player". Some players will get less.');
+  G.tasks.forEach(t=>{if(t.parts.length>1&&taskCost(t)>G.cfg.tasksPerPlayer)w.push('Long task "'+t.name+'" is bigger than "Tasks per player" and will never be given out.');});
+  return {e:e,w:w};
+}
+/* A long task counts as 2-3 short ones (steps in several rooms take time), so everyone gets the same WORKLOAD:
+   either one long task + a few short ones, or only short ones. Long tasks are spread evenly and every task is handed out evenly. */
+function taskCost(t){return t.parts.length===1?1:Math.ceil(1+(t.parts.length-1)*0.5);}
+function assignTasks(){
+  const B=Math.max(1,G.cfg.tasksPerPlayer),used={};
+  const left=t=>!t.max||(used[t.id]||0)<t.max;
+  const longs=G.tasks.filter(t=>t.parts.length>1&&taskCost(t)<=B);
+  const shorts=G.tasks.filter(t=>t.parts.length===1);
+  const order=shuffle(G.players.slice());
+  const longN=shorts.length?Math.min(order.length,Math.ceil(order.length/2)):order.length;
+  const pick=(pool,k,mine)=>shuffle(pool.filter(t=>left(t)&&mine.indexOf(t.id)<0)).sort((x,y)=>(used[x.id]||0)-(used[y.id]||0)).slice(0,k);
+  order.forEach((p,i)=>{
+    const mine=[],list=[];let budget=B;
+    const take=t=>{mine.push(t.id);used[t.id]=(used[t.id]||0)+1;list.push(t);budget-=taskCost(t);};
+    if(i<longN&&longs.length){const l=pick(longs,1,mine)[0];if(l)take(l);}
+    pick(shorts,budget,mine).forEach(take);
+    if(budget>0){const l=pick(longs.filter(x=>taskCost(x)<=budget),1,mine)[0];if(l)take(l);}
+    p.tasks=shuffle(list).map(t=>({tid:t.id,name:t.name,parts:t.parts.map(x=>({room:x.room,label:x.label||'',done:false}))}));
+  });
+}
+function startGame(){
+  G.result=null;G.winner=null;G.sab=null;G.meeting=null;G.votes=null;
+  const ps=shuffle(G.players.slice());
+  ps.forEach((p,i)=>{p.role=i<G.cfg.imposters?'imp':'crew';});
+  G.players.forEach(p=>{p.alive=true;p.seen=false;p.reported=false;p.meetingsLeft=G.cfg.emergencyMeetings;p.tasks=[];});
+  assignTasks();
+  G.phase='reveal';
+}
+
+/* ---------- RPC (everything players do goes through here) ---------- */
+function commsDown(ctx){return !!(G.sab&&G.sab.comms&&!G.sab.fixes[ctx.room]);}
+function commsMsg(){return 'Communications are down. Go to '+Object.keys(G.sab.fixes).join(' / ')+' to fix them.';}
+function handleRpc(type,p,ctx){
+  p=p||{};const host=ctx.from==='host';
+  if(['tasks','toggle','deadAuth','dead','report','sabAuth','sabotage'].indexOf(type)>=0&&commsDown(ctx)) return fail(commsMsg());
+  switch(type){
+    case 'pickRoom': return rpcPickRoom(p.room,ctx);
+    case 'reveal': return host?rpcReveal(p.code):fail('Host device only.');
+    case 'revealDone': return host?rpcRevealDone(p.code):fail('Host device only.');
+    case 'tasks': return rpcTasks(p.code,ctx);
+    case 'toggle': return rpcToggle(p.code,p.tid,p.part,p.done,ctx);
+    case 'deadAuth': return rpcDeadAuth(p.code);
+    case 'dead': return rpcDead(p.code);
+    case 'report': return rpcReport(ctx);
+    case 'emergency': return host?rpcEmergency(p.code):fail('Only the host device can call emergency meetings.');
+    case 'sabAuth': return rpcSabAuth(p.code);
+    case 'sabotage': return rpcSabotage(p.code,p.sid);
+    case 'fix': return rpcFix(p,ctx);
+    case 'voteAuth': return host?rpcVoteAuth(p.code):fail('Host device only.');
+    case 'castVote': return host?rpcCastVote(p.code,p.target):fail('Host device only.');
+  }
+  return fail('Unknown action.');
+}
+function rpcPickRoom(room,ctx){
+  if(ctx.from==='host') return fail('The host device is the meeting room.');
+  if(G.phase!=='lobby') return fail('Rooms can only be changed before the game starts.');
+  if(G.rooms.indexOf(room)<0) return fail('Unknown room.');
+  if(G.devices[ctx.from]) G.devices[ctx.from].room=room;
+  return ok();
+}
+function rpcReveal(code){
+  if(G.phase!=='reveal') return fail('Roles are not being revealed right now.');
+  const p=findByCode(code); if(!p) return fail('Invalid code ID.');
+  return ok({name:p.name,role:p.role,
+    mates:p.role==='imp'?G.players.filter(x=>x.role==='imp'&&x.id!==p.id).map(x=>x.name):[],
+    tasks:p.tasks.map(t=>({name:t.name,parts:t.parts.map(x=>({room:x.room,label:x.label}))}))});
+}
+function rpcRevealDone(code){
+  if(G.phase!=='reveal') return ok({started:false});
+  const p=findByCode(code); if(!p) return fail('Invalid code ID.');
+  p.seen=true;
+  if(G.players.every(x=>x.seen)){G.phase='play';G.sabReadyAt=Date.now()+G.cfg.sabCooldown*1000;return ok({started:true});}
+  return ok({started:false});
+}
+function rpcTasks(code,ctx){
+  if(G.phase!=='play') return fail('Not available right now.');
+  const p=findByCode(code); if(!p) return fail('Invalid code ID.');
+  return ok({name:p.name,alive:p.alive,here:ctx.room,lock:G.cfg.taskRoomLock,
+    tasks:p.tasks.map(t=>({tid:t.tid,name:t.name,parts:t.parts.map(x=>({room:x.room,label:x.label,done:x.done}))}))});
+}
+function rpcToggle(code,tid,part,done,ctx){
+  if(G.phase!=='play') return fail('Not available right now.');
+  const p=findByCode(code); if(!p) return fail('Invalid code ID.');
+  const t=p.tasks.find(x=>x.tid===tid); if(!t) return fail('Unknown task.');
+  const idx=part|0,x=t.parts[idx]; if(!x) return fail('Unknown step.');
+  if(done){const prev=t.parts.findIndex((y,i)=>i<idx&&!y.done);if(prev>=0) return fail('Finish step '+(prev+1)+' first.');}
+  else if(t.parts.some((y,i)=>i>idx&&y.done)) return fail('Undo the later steps first.');
+  if(G.cfg.taskRoomLock&&x.room!==ctx.room) return fail('Go to "'+x.room+'" to tick this task.');
+  x.done=!!done; checkWin(); return ok();
+}
+function rpcDeadAuth(code){
+  if(G.phase!=='play') return fail('Not available right now.');
+  const p=findByCode(code); if(!p) return fail('Invalid code ID.');
+  if(!p.alive) return fail('You are already registered dead.');
+  return ok({name:p.name});
+}
+function rpcDead(code){
+  if(G.phase!=='play') return fail('Not available right now.');
+  const p=findByCode(code); if(!p) return fail('Invalid code ID.');
+  if(!p.alive) return fail('You are already registered dead.');
+  p.alive=false;p.reported=false; checkWin(); return ok();
+}
+function beginMeeting(kind,extra){
+  G.votes=null;G.result=null; /* an active sabotage is kept and resumes after the meeting */
+  G.meeting=Object.assign({kind:kind,at:Date.now()},extra||{});G.phase='gather';
+}
+/* instant: one tap, no code ID. The host registers who died in the "Register the dead" step. */
+function rpcReport(ctx){
+  if(G.phase!=='play') return fail('Reports are not possible right now.');
+  beginMeeting('body',{room:ctx.room});
+  checkWin(); return ok();
+}
+function rpcEmergency(code){
+  if(G.phase!=='play') return fail('Not possible right now.');
+  if(G.sab) return fail('No emergency meetings during a sabotage.');
+  const p=findByCode(code); if(!p) return fail('Invalid code ID.');
+  if(!p.alive) return fail('Dead players cannot call meetings.');
+  if(p.meetingsLeft<=0) return fail('You have no emergency meetings left.');
+  p.meetingsLeft--; beginMeeting('emergency',{reporter:p.name}); return ok();
+}
+function rpcSabAuth(code){
+  if(G.phase!=='play') return fail('Not available right now.');
+  const p=findByCode(code); if(!p) return fail('Invalid code ID.');
+  if(p.role!=='imp'||!p.alive) return fail('Access denied.');
+  return ok({readyAt:G.sabReadyAt,active:!!G.sab,
+    list:G.sabotages.map(s=>({id:s.id,name:s.name,puzzle:s.puzzle,seconds:s.puzzle==='wave'?0:s.seconds,rooms:sabRooms(s)}))});
+}
+function rpcSabotage(code,sid){
+  if(G.phase!=='play') return fail('Not available right now.');
+  const p=findByCode(code); if(!p) return fail('Invalid code ID.');
+  if(p.role!=='imp'||!p.alive) return fail('Access denied.');
+  if(G.sab) return fail('A sabotage is already active.');
+  const wait=Math.ceil((G.sabReadyAt-Date.now())/1000);
+  if(wait>0) return fail('Sabotage is cooling down: '+wait+'s left.');
+  const s=G.sabotages.find(x=>x.id===sid); if(!s) return fail('Unknown sabotage.');
+  const fixes={};
+  sabRooms(s).forEach(r=>{fixes[r]={puzzle:s.puzzle,code:rand6(),seed:Math.floor(Math.random()*1e9)+1,done:false};});
+  const comms=s.puzzle==='wave';
+  G.sab={sid:s.id,name:s.name,comms:comms,seconds:comms?0:s.seconds,endsAt:comms?0:Date.now()+s.seconds*1000,fixes:fixes};
+  return ok();
+}
+function rpcFix(p,ctx){
+  if(!G.sab) return fail('No sabotage is active.');
+  if(G.phase!=='play') return fail('Repairs are paused during the meeting.');
+  const f=G.sab.fixes[ctx.room]; if(!f) return fail('This device is not used for this repair.');
+  if(f.done) return ok();
+  if(f.puzzle==='code'){
+    if(String(p.code||'').trim()!==f.code) return fail('Wrong code. Type the number shown above.');
+  }else if(p.solved!==true) return fail('The repair is not finished yet.');
+  f.done=true;
+  if(Object.keys(G.sab.fixes).every(r=>G.sab.fixes[r].done)){G.sab=null;G.sabReadyAt=Date.now()+G.cfg.sabCooldown*1000;}
+  return ok();
+}
+
+/* ---------- meeting flow (host device) ---------- */
+function meetingStart(){if(G.phase==='gather')G.phase='register';}
+function registerDeadDone(ids){
+  if(G.phase!=='register') return;
+  (ids||[]).forEach(id=>{const p=G.players.find(x=>x.id===id);if(p)p.alive=false;});
+  G.players.forEach(p=>{if(!p.alive)p.reported=true;});
+  const r=evaluateWin(); if(r){endGame(r.w,r.why);return;}
+  G.phase='discuss';G.meeting.discussEnds=Date.now()+G.cfg.discussSec*1000;
+}
+function startVote(){if(G.phase==='discuss'){G.phase='vote';G.votes={};}}
+function rpcVoteAuth(code){
+  if(G.phase!=='vote') return fail('Voting is not open.');
+  const p=findByCode(code); if(!p) return fail('Invalid code ID.');
+  if(!p.alive) return fail('Dead players cannot vote.');
+  if(p.id in G.votes) return fail('You have already voted.');
+  return ok({name:p.name,candidates:G.players.filter(x=>x.alive).map(x=>({id:x.id,name:x.name}))});
+}
+function rpcCastVote(code,target){
+  if(G.phase!=='vote') return fail('Voting is not open.');
+  const p=findByCode(code); if(!p||!p.alive) return fail('Invalid code ID.');
+  if(p.id in G.votes) return fail('You have already voted.');
+  if(target!=='skip'){const t=G.players.find(x=>x.id===target);if(!t||!t.alive) return fail('Invalid choice.');}
+  G.votes[p.id]=target;
+  if(G.players.filter(x=>x.alive).every(x=>x.id in G.votes)) tally();
+  return ok();
+}
+function finishVote(){if(G.phase==='vote')tally();}
+function tally(){
+  const counts={};let skip=0;
+  Object.keys(G.votes).forEach(v=>{const t=G.votes[v];if(t==='skip')skip++;else counts[t]=(counts[t]||0)+1;});
+  let max=skip,top=['skip'];
+  Object.keys(counts).forEach(id=>{if(counts[id]>max){max=counts[id];top=[id];}else if(counts[id]===max){top.push(id);}});
+  let ej=null;
+  if(top.length===1&&top[0]!=='skip'){ej=G.players.find(x=>x.id===top[0]);ej.alive=false;ej.reported=true;}
+  const nameOf=id=>{const x=G.players.find(y=>y.id===id);return x?x.name:'?';};
+  G.result={
+    ejected:ej?ej.name:null,
+    wasImp:(G.cfg.confirmEjects&&ej)?ej.role==='imp':null,
+    tie:top.length>1,
+    skip:skip,
+    counts:Object.keys(counts).map(id=>({name:nameOf(id),count:counts[id]})).sort((a,b)=>b.count-a.count),
+    voters:G.cfg.anonymousVotes?null:Object.keys(G.votes).map(v=>({voter:nameOf(v),target:G.votes[v]==='skip'?'Skip':nameOf(G.votes[v])}))
+  };
+  G.phase='result';
+}
+function resultContinue(){
+  if(G.phase!=='result') return;
+  const r=evaluateWin(); if(r){endGame(r.w,r.why);return;}
+  G.phase='play';G.meeting=null;G.result=null;G.votes=null;G.sabReadyAt=Date.now()+G.cfg.sabCooldown*1000;
+  if(G.sab&&G.sab.seconds>0) G.sab.endsAt=Date.now()+G.sab.seconds*1000; /* sabotage continues, timer starts again */
+}
+function tickEngine(){
+  if(G.phase==='play'&&G.sab&&G.sab.endsAt>0&&Date.now()>=G.sab.endsAt){endGame('imp','The sabotage was not fixed in time.');return true;}
+  return false;
+}
+
+/* ---------- what each device is allowed to see ---------- */
+function viewState(room){
+  const S={
+    now:Date.now(),phase:G.phase,cfg:G.cfg,hostRoom:G.hostRoom,rooms:G.rooms.slice(),myRoom:room,
+    takenRooms:Object.keys(G.devices).map(k=>G.devices[k].room).filter(Boolean),
+    players:G.players.map(p=>({id:p.id,name:p.name,alive:p.alive,seen:p.seen,meetings:p.meetingsLeft,voted:!!(G.votes&&(p.id in G.votes))})),
+    meeting:G.meeting,result:G.result,winner:G.winner,sab:null,progress:null,roles:null
+  };
+  if(G.sab){
+    const f=room&&G.sab.fixes[room];
+    const mine=f?{puzzle:f.puzzle,code:f.puzzle==='code'?f.code:null,seed:f.seed,done:f.done}:null;
+    S.sab={name:G.sab.name,comms:!!G.sab.comms,endsAt:G.sab.endsAt,mine:mine,
+      stations:Object.keys(G.sab.fixes).map(r=>({room:r,done:G.sab.fixes[r].done}))};
+  }
+  if(G.cfg.showProgress&&G.phase!=='lobby'&&G.phase!=='reveal') S.progress=progress();
+  if(G.phase==='over') S.roles=G.players.map(p=>({name:p.name,role:p.role,alive:p.alive}));
+  return S;
+}
+</script>
+
+<!-- ============================ USER INTERFACE + NETWORK ============================ -->
+<script id="ui">
+/* ---------- tiny helpers ---------- */
+const JOINSRC=location.search+location.hash;
+const MODE=/join=/.test(JOINSRC)?'client':'host';
+function joinId(){return (JOINSRC.match(/join=([\w-]+)/)||[])[1];}
+/* All devices talk through server.js (a relay on the internet), so they can be on different networks. */
+let RELAY=null;
+const relayProbe=(function(){
+  if(location.protocol==='file:') return Promise.resolve(null);
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),2500);
+  return fetch('/ih-info',{cache:'no-store',signal:ctl.signal}).then(r=>r.json()).then(j=>{clearTimeout(to);return j&&j.ih?j:null;}).catch(()=>null);
+})();
+function relaySend(o){
+  return fetch('/send',{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(o)}).then(r=>r.json()).catch(()=>({ok:false}));
+}
+
+if(MODE==='client') document.body.classList.add('client');
+const CLOCK={offset:0};
+const nowS=()=>Date.now()+CLOCK.offset;
+const $=(s,r)=>(r||document).querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+function toast(msg,kind){const el=document.createElement('div');el.className='toast '+(kind||'');el.textContent=msg;$('#toasts').appendChild(el);setTimeout(()=>el.remove(),3800);}
+function setHTML(el,html){
+  if(el._h===html) return; el._h=html;
+  const act=document.activeElement,aid=act&&act.id,ss=act&&act.selectionStart;
+  const keep={};el.querySelectorAll('[data-keep]').forEach(i=>{if(i.id)keep[i.id]=i.type==='checkbox'?i.checked:i.value;});
+  el.innerHTML=html;
+  Object.keys(keep).forEach(k=>{const i=el.querySelector('#'+k);if(i){if(i.type==='checkbox')i.checked=keep[k];else i.value=keep[k];}});
+  if(aid){const n=document.getElementById(aid);if(n&&el.contains(n)){n.focus();try{if(ss!=null)n.setSelectionRange(ss,ss);}catch(e){}}}
+}
+const val=id=>{const e=document.getElementById(id);return e?e.value:'';};
+const clr=id=>{const e=document.getElementById(id);if(e)e.value='';};
+
+/* ---------- siren (generated sound, no audio files) ---------- */
+const Siren={ctx:null,want:null,cur:null,osc:null,iv:null,won:false,
+  unlock(){try{
+    if(!this.ctx){const AC=window.AudioContext||window.webkitAudioContext;if(AC){this.ctx=new AC();this.ctx.onstatechange=()=>this.apply();}}
+    if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume();}catch(e){}
+    this.apply();},
+  set(m){this.want=m||null;this.apply();},
+  /* one-shot winner jingles: bright rising major fanfare for crewmates, slow dark minor motif for imposters */
+  fanfare(who){
+    const c=this.ctx;if(!c||c.state!=='running') return false;
+    const t0=c.currentTime+0.05,master=c.createGain();master.gain.value=0.55;master.connect(c.destination);
+    const note=(f,t,d,type,vol)=>{
+      const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t0+t);
+      g.gain.setValueAtTime(0.0001,t0+t);g.gain.linearRampToValueAtTime(vol,t0+t+0.03);g.gain.exponentialRampToValueAtTime(0.0001,t0+t+d);
+      o.connect(g);g.connect(master);o.start(t0+t);o.stop(t0+t+d+0.05);};
+    if(who==='crew'){
+      [[523.25,0],[659.25,0.16],[783.99,0.32],[1046.5,0.48]].forEach(n=>{note(n[0],n[1],0.45,'triangle',0.5);note(n[0]*2,n[1],0.35,'sine',0.14);});
+      [1046.5,1318.5,1568].forEach(f=>note(f,0.85,1.5,'triangle',0.3));
+      [2093,2637,3136,4186].forEach((f,i)=>note(f,1.05+i*0.11,0.45,'sine',0.1));
+    }else{
+      [[440,0],[392,0.32],[349.23,0.64],[329.63,0.96]].forEach(n=>{note(n[0],n[1],0.5,'triangle',0.5);note(n[0]/2,n[1],0.5,'sine',0.25);});
+      [110,164.81,220,261.63].forEach(f=>note(f,1.4,2.1,'triangle',0.32));
+      note(1318.5,1.9,1.0,'sine',0.08);
+    }
+    return true;
+  },
+  stopNow(){clearInterval(this.iv);this.iv=null;if(this.osc){try{this.osc.stop();this.osc.disconnect();}catch(e){}this.osc=null;}},
+  /* three clearly different sounds: body = slow hollow bell-like two-note, emergency = rising/falling wail, sabotage = rapid triple beeps */
+  apply(){
+    if(this.cur===this.want) return;
+    this.stopNow();this.cur=null;
+    if(!this.want||!this.ctx||this.ctx.state!=='running') return;
+    this.cur=this.want;
+    const c=this.ctx,o=c.createOscillator(),g=c.createGain(),mode=this.cur;
+    o.type={body:'square',emergency:'sawtooth',sab:'square'}[mode];
+    g.gain.value=0.0001;o.connect(g);g.connect(c.destination);o.start();this.osc=o;
+    let i=0;
+    const step=()=>{
+      const t=c.currentTime;
+      g.gain.cancelScheduledValues(t);o.frequency.cancelScheduledValues(t);
+      if(mode==='body'){
+        o.frequency.setValueAtTime(i%2?330:440,t);
+        g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.75,t+0.02);g.gain.setValueAtTime(0.75,t+0.5);g.gain.linearRampToValueAtTime(0.0001,t+0.64);
+      }else if(mode==='emergency'){
+        o.frequency.setValueAtTime(520,t);o.frequency.linearRampToValueAtTime(1300,t+0.6);o.frequency.linearRampToValueAtTime(520,t+1.2);
+        g.gain.setValueAtTime(0.13,t);
+      }else{
+        o.frequency.setValueAtTime(1500,t);
+        [0,0.2,0.4].forEach(d=>{g.gain.setValueAtTime(0.15,t+d);g.gain.setValueAtTime(0.0001,t+d+0.1);});
+      }
+      i++;};
+    step();this.iv=setInterval(step,{body:750,emergency:1200,sab:1000}[mode]);
+    try{if(navigator.vibrate)navigator.vibrate({body:[500,150,500],emergency:[200,100,200,100,200],sab:[100,60,100,60,100]}[mode]);}catch(e){}
+  }};
+function sirenMode(S){
+  if(S.phase==='gather') return (S.meeting&&S.meeting.kind==='emergency')?'emergency':'body';
+  return (S.sab&&S.phase==='play')?'sab':null;
+}
+function applySiren(S){
+  const m=sirenMode(S);Siren.set(m);$('#siren').className=m==='sab'?'sab':(m?'meeting':'');
+  if(S.phase==='over'&&S.winner){if(!Siren.won&&Siren.fanfare(S.winner.w))Siren.won=true;}else Siren.won=false;
+}
+
+let wakeLock=null;
+async function keepAwake(){try{if(navigator.wakeLock)wakeLock=await navigator.wakeLock.request('screen');}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')keepAwake();});
+
+/* ---------- event delegation ---------- */
+const ACT={};
+function touchIdle(){RP.deadline=Date.now()+30000;}
+document.addEventListener('pointerdown',()=>Siren.unlock(),{passive:true});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b||b.disabled)return;
+  touchIdle();const f=ACT[b.dataset.act];if(f)f(b,e);
+});
+document.addEventListener('change',e=>{const b=e.target.closest('[data-chg]');if(!b)return;const f=ACT[b.dataset.chg];if(f)f(b,e);});
+document.addEventListener('keydown',e=>{
+  touchIdle();
+  if(e.key==='Enter'){const b=e.target.closest('[data-enter]');if(b){e.preventDefault();const f=ACT[b.dataset.enter];if(f)f(b,e);}}
+});
+
+/* =====================================================================
+   ROOM PANEL – shared by every room device AND the host device
+   ===================================================================== */
+const RP={view:'home',purpose:null,code:'',data:null,err:null,busy:false,deadline:0};
+function rpReset(){RP.view='home';RP.purpose=null;RP.code='';RP.data=null;RP.err=null;}
+function rpcCall(type,p){return MODE==='host'?hostLocalRpc(type,p):clientRpc(type,p);}
+
+const PUZNAME={code:'Enter the code',match:'Match the wires',dust:'Clear the dust and pollution',wave:'Match the wavelength'};
+function isCommsDead(S){return S.phase==='play'&&!!S.sab&&S.sab.comms&&!S.sab.mine;}
+function commsDeadHTML(S){
+  const pend=S.sab.stations.filter(s=>!s.done).map(s=>esc(s.room));
+  return '<div class="deadscreen"><div class="big">📡</div><h2>Communications offline</h2><p>Every device is down.</p><p>Go to <b>'+pend.join(' / ')+'</b> to restore the signal.</p></div>';
+}
+/* sabotage alert lives in a screen corner so Report body / My tasks stay usable (not for Communications) */
+function cornerHTML(S){
+  if(S.phase!=='play'||!S.sab||S.sab.comms) return '';
+  const sab=S.sab,mine=sab.mine,pend=sab.stations.filter(s=>!s.done).map(s=>esc(s.room));
+  let h='<div class="corner"><div class="chd"><b>⚠ '+esc(sab.name)+'</b>'+(sab.endsAt?'<span class="timer cd" data-end="'+sab.endsAt+'" data-zero="0:00"></span>':'')+'</div>';
+  if(mine&&!mine.done) h+='<div style="margin-top:6px">Repair station here: '+esc(PUZNAME[mine.puzzle]||'')+'.</div><button class="btn hazard block" style="margin-top:8px" data-act="pz_open">Repair now</button>';
+  else if(mine&&mine.done) h+='<div style="margin-top:6px">✔ Repaired here.'+(pend.length?' Waiting for <b>'+pend.join(' / ')+'</b>.':'')+'</div>';
+  else h+='<div style="margin-top:6px">Go to <b>'+pend.join(' and ')+'</b> to fix it.</div>';
+  h+='<div class="chips">'+sab.stations.map(s=>'<span class="chip '+(s.done?'seen':'')+'">'+(s.done?'✔ ':'⚠ ')+esc(s.room)+'</span>').join('')+'</div></div>';
+  return h;
+}
+function roomPanelHTML(S){
+  if(S.phase!=='play'){rpReset();return '';}
+  if(isCommsDead(S)){rpReset();return commsDeadHTML(S);}
+  let h='';
+  const titles={tasks:'Check my tasks',sab:'Sabotage',dead:'Register my death'};
+  if(RP.view==='home'){
+    h+='<div class="actions">'+
+      '<button class="btn danger" data-act="rp_report"><span>🚨</span>Report body</button>'+
+      '<button class="btn primary" data-act="rp_open" data-p="tasks"><span>📋</span>My tasks</button>'+
+      '<button class="btn" data-act="rp_open" data-p="sab"><span>🛠</span>Sabotage</button>'+
+      '<button class="btn" data-act="rp_open" data-p="dead"><span>💀</span>I was killed</button></div>';
+    if(RP.err) h+='<div class="err">'+esc(RP.err)+'</div>';
+  }else if(RP.view==='code'){
+    h+='<h3>'+titles[RP.purpose]+'</h3><p style="color:var(--mute);margin:4px 0 12px">Enter your code ID.</p>'+
+      '<input id="codeIn" data-keep class="codein" type="password" autocomplete="off" autocapitalize="characters" maxlength="6" placeholder="••••" data-enter="rp_submit">'+
+      (RP.err?'<div class="err">'+esc(RP.err)+'</div>':'')+
+      '<div style="display:flex;gap:10px;margin-top:12px"><button class="btn ghost" data-act="rp_home">Cancel</button><button class="btn primary" style="flex:1" data-act="rp_submit">Continue</button></div>';
+  }else if(RP.view==='tasks'){
+    const d=RP.data;
+    h+='<div class="roomhd"><div><small>Tasks for</small><b>'+esc(d.name)+'</b></div><span class="tag">'+esc(d.here||'')+'</span></div>';
+    if(!d.alive) h+='<div class="note">You are registered dead. You can still tick tasks.</div>';
+    const roomTag=x=>'<span class="tag '+(x.room===d.here?'here':'')+'">'+esc(x.room)+(x.room===d.here?' · here':'')+'</span>';
+    h+=d.tasks.map(t=>{
+      if(t.parts.length===1){
+        const x=t.parts[0];
+        return '<div class="task '+(x.done?'done':'')+'" data-act="rp_toggle" data-tid="'+t.tid+'" data-part="0" data-done="'+(x.done?0:1)+'"><div class="box">'+(x.done?'✔':'')+'</div><div class="nm">'+esc(t.name)+'</div>'+roomTag(x)+'</div>';
+      }
+      const nd=t.parts.filter(x=>x.done).length;
+      return '<div class="ltask"><div class="lhd"><b>'+esc(t.name)+'</b><span class="tag">'+nd+'/'+t.parts.length+' steps</span></div>'+
+        t.parts.map((x,i)=>{
+          const locked=t.parts.slice(0,i).some(y=>!y.done);
+          if(locked) return '<div class="task sub locked"><div class="box">🔒</div><div class="nm">'+(i+1)+'. '+esc(x.label||('Step '+(i+1)))+'<small>Finish step '+i+' first</small></div>'+roomTag(x)+'</div>';
+          return '<div class="task sub '+(x.done?'done':'')+'" data-act="rp_toggle" data-tid="'+t.tid+'" data-part="'+i+'" data-done="'+(x.done?0:1)+'"><div class="box">'+(x.done?'✔':'')+'</div><div class="nm">'+(i+1)+'. '+esc(x.label||('Step '+(i+1)))+'</div>'+roomTag(x)+'</div>';
+        }).join('')+'</div>';
+    }).join('');
+    if(d.lock) h+='<small style="margin-top:10px">Tick a task (or task step) only in the room it belongs to.</small>';
+    if(RP.err) h+='<div class="err">'+esc(RP.err)+'</div>';
+    h+='<button class="btn block" style="margin-top:14px" data-act="rp_home">Close and hide</button>';
+  }else if(RP.view==='sab'){
+    const d=RP.data;
+    h+='<h3>Sabotage</h3><p style="color:var(--mute);margin:4px 0 8px">Ready in <b class="cd" data-end="'+d.readyAt+'" data-zero="now"></b></p><div class="pick">'+
+      d.list.map(s=>'<button class="btn block" data-act="rp_sabgo" data-sid="'+s.id+'"><span style="flex:1;text-align:left">'+esc(s.name)+'<small>'+s.rooms.map(esc).join(' + ')+' · '+(s.seconds?s.seconds+'s':(s.puzzle==='wave'?'all other devices go dark':'no limit'))+'</small></span></button>').join('')+'</div>'+
+      (RP.err?'<div class="err">'+esc(RP.err)+'</div>':'')+
+      '<button class="btn ghost block" style="margin-top:12px" data-act="rp_home">Close</button>';
+  }else if(RP.view==='dead'){
+    h+='<h3>Were you killed, '+esc(RP.data.name)+'?</h3><p style="color:var(--mute)">You will be registered dead. Do not touch anything else and wait for a meeting.</p>'+
+      (RP.err?'<div class="err">'+esc(RP.err)+'</div>':'')+
+      '<div style="display:flex;gap:10px;margin-top:12px"><button class="btn ghost" data-act="rp_home">No, go back</button><button class="btn danger" style="flex:1" data-act="rp_dead">Yes, register my death</button></div>';
+  }
+  return h;
+}
+ACT.rp_home=()=>{rpReset();renderAll();};
+ACT.rp_open=b=>{RP.view='code';RP.purpose=b.dataset.p;RP.err=null;touchIdle();renderAll();setTimeout(()=>{const i=$('#codeIn');if(i)i.focus();},50);};
+ACT.rp_submit=async()=>{
+  const code=val('codeIn').trim();if(!code){RP.err='Enter your code ID.';renderAll();return;}
+  const map={tasks:'tasks',sab:'sabAuth',dead:'deadAuth'};
+  const r=await rpcCall(map[RP.purpose],{code:code});
+  if(!r.ok){RP.err=r.error;clr('codeIn');renderAll();return;}
+  RP.code=code;RP.data=r.data;RP.err=null;RP.view=RP.purpose;touchIdle();renderAll();
+};
+ACT.rp_toggle=async b=>{
+  const r=await rpcCall('toggle',{code:RP.code,tid:b.dataset.tid,part:Number(b.dataset.part)||0,done:b.dataset.done==='1'});
+  if(!r.ok){RP.err=r.error;renderAll();return;}
+  const t=await rpcCall('tasks',{code:RP.code});
+  if(t.ok){RP.data=t.data;RP.err=null;}else rpReset();
+  renderAll();
+};
+ACT.rp_sabgo=async b=>{
+  const r=await rpcCall('sabotage',{code:RP.code,sid:b.dataset.sid});
+  if(!r.ok){RP.err=r.error;renderAll();return;}
+  rpReset();renderAll();
+};
+ACT.rp_report=async()=>{ /* instant: no code ID, no questions */
+  const r=await rpcCall('report',{});
+  RP.err=r.ok?null:r.error;renderAll();
+};
+ACT.rp_dead=async()=>{
+  const r=await rpcCall('dead',{code:RP.code});
+  if(!r.ok){RP.err=r.error;renderAll();return;}
+  rpReset();renderAll();toast('You are registered dead.');
+};
+
+/* =====================================================================
+   REPAIR PUZZLES (full-screen overlay, only on the device in the repair room)
+   ===================================================================== */
+const PZ={open:false,done:false,raf:0};
+function curS(){return MODE==='host'?viewState(G.hostRoom):Cl.S;}
+function rng(seed){let a=seed>>>0;return function(){a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
+function pzMsg(t,bad){const m=$('#pzMsg');if(m){m.textContent=t;m.className=bad?'err':'okmsg';}}
+function pzClose(){
+  cancelAnimationFrame(PZ.raf);PZ.open=false;PZ.done=false;
+  const el=$('#puzzle');el.className='';el.innerHTML='';
+}
+async function pzSolved(payload){
+  if(PZ.done) return false;
+  const r=await rpcCall('fix',payload||{solved:true});
+  if(!r.ok){pzMsg(r.error,true);return false;}
+  PZ.done=true;pzMsg('✔ Station repaired!',false);toast('Station repaired','good');
+  setTimeout(pzClose,1100);renderAll();return true;
+}
+function pzOpen(lock){
+  const S=curS();if(!S||!S.sab||!S.sab.mine||S.sab.mine.done) return;
+  const m=S.sab.mine;pzClose();PZ.open=true;
+  const el=$('#puzzle');el.className=lock?'on lock':'on';
+  if(lock) el.innerHTML='<div class="pzcard"><div id="pzBody"></div><div id="pzMsg" class="err"></div></div>';
+  else el.innerHTML='<div class="pzcard"><div class="roomhd"><div><small>'+esc(S.sab.name)+'</small><b>'+esc(PUZNAME[m.puzzle]||'Repair')+'</b></div><button class="btn ghost" data-act="pz_close">Minimise</button></div><div id="pzBody"></div><div id="pzMsg" class="err"></div></div>';
+  ({code:pzCode,match:pzMatch,dust:pzDust,wave:pzWave}[m.puzzle]||pzCode)($('#pzBody'),m);
+}
+ACT.pz_open=()=>pzOpen(false);
+ACT.pz_close=()=>pzClose();
+
+function pzCode(box,m){
+  box.innerHTML='<p style="color:var(--mute);margin:0">Type the number shown to repair this station.</p><div class="fixcode">'+esc(m.code)+'</div>'+
+    '<input id="fixIn" class="codein" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••••"><button class="btn hazard block" style="margin-top:10px" id="fixGo">Fix this station</button>';
+  const go=async()=>{const ok2=await pzSolved({code:$('#fixIn').value});if(!ok2){const i=$('#fixIn');if(i){i.value='';i.focus();}}};
+  $('#fixGo').onclick=go;$('#fixIn').onkeydown=e=>{if(e.key==='Enter')go();};
+  setTimeout(()=>{const i=$('#fixIn');if(i)i.focus();},60);
+}
+function pzMatch(box,m){
+  const R=rng(m.seed);
+  const sh=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+  const cols=sh(['#ff4d5e','#3be8ff','#ffc933','#4fe39a','#b58bff']).slice(0,4);
+  const right=sh(cols.slice());
+  box.innerHTML='<p style="color:var(--mute);margin:0 0 10px">Tap a wire on the left, then the matching colour on the right.</p>'+
+    '<div class="wires" id="wires"><svg id="wsvg"></svg><div class="wcol">'+cols.map((c,i)=>'<button class="wnode" data-c="'+c+'" data-side="L" style="background:'+c+'"></button>').join('')+'</div>'+
+    '<div class="wcol">'+right.map(c=>'<button class="wnode" data-c="'+c+'" data-side="R" style="background:'+c+'"></button>').join('')+'</div></div>';
+  const wrap=$('#wires'),svg=$('#wsvg');let sel=null,done=0;
+  const nodes=[...wrap.querySelectorAll('.wnode')];
+  nodes.forEach(n=>{n.onclick=()=>{
+    if(n.classList.contains('on')) return;
+    if(n.dataset.side==='L'){nodes.forEach(x=>x.classList.remove('sel'));sel=n;n.classList.add('sel');return;}
+    if(!sel){pzMsg('Pick a wire on the left first.',true);return;}
+    if(sel.dataset.c===n.dataset.c){
+      const cr=wrap.getBoundingClientRect(),a=sel.getBoundingClientRect(),b=n.getBoundingClientRect();
+      const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+      ln.setAttribute('x1',a.left+a.width/2-cr.left);ln.setAttribute('y1',a.top+a.height/2-cr.top);
+      ln.setAttribute('x2',b.left+b.width/2-cr.left);ln.setAttribute('y2',b.top+b.height/2-cr.top);
+      ln.setAttribute('stroke',n.dataset.c);ln.setAttribute('stroke-width','9');ln.setAttribute('stroke-linecap','round');
+      svg.appendChild(ln);sel.classList.remove('sel');sel.classList.add('on');n.classList.add('on');sel=null;done++;pzMsg('',false);
+      if(done===cols.length) pzSolved({solved:true});
+    }else{
+      n.classList.add('shake');setTimeout(()=>n.classList.remove('shake'),400);
+      sel.classList.remove('sel');sel=null;pzMsg('Wrong match – try again.',true);
+    }};});
+}
+function pzDust(box,m){
+  const R=rng(m.seed),N=24;
+  box.innerHTML='<p style="color:var(--mute);margin:0 0 10px">Wipe your finger (or move the mouse) across the dust and pollution to clean the air.</p>'+
+    '<div class="dustfield" id="dustF"></div><div class="bar" style="margin-top:10px"><i id="airBar" style="width:0%"></i></div><small id="airTxt">Air quality 0%</small>';
+  const f=$('#dustF'),ps=[];let finished=false;
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div'),s=38+R()*46;
+    d.className='dust';d.style.width=d.style.height=s+'px';d.style.left=(8+R()*84)+'%';d.style.top=(8+R()*84)+'%';d.style.opacity=(0.55+R()*0.4).toFixed(2);
+    f.appendChild(d);ps.push({d:d,gone:false});
+  }
+  const update=()=>{
+    const left=ps.filter(p=>!p.gone).length,pc=Math.round((N-left)/N*100);
+    $('#airBar').style.width=pc+'%';$('#airTxt').textContent='Air quality '+pc+'%';
+    if(!left&&!finished){finished=true;pzSolved({solved:true});}
+  };
+  const clearAt=(x,y)=>{ps.forEach(p=>{if(p.gone)return;const r=p.d.getBoundingClientRect();
+    if(Math.hypot(r.left+r.width/2-x,r.top+r.height/2-y)<r.width/2+24){p.gone=true;p.d.classList.add('gone');}});update();};
+  let down=false;
+  f.onpointerdown=e=>{down=true;try{f.setPointerCapture(e.pointerId);}catch(x){}clearAt(e.clientX,e.clientY);};
+  f.onpointermove=e=>{if(down||e.pointerType==='mouse')clearAt(e.clientX,e.clientY);};
+  f.onpointerup=f.onpointercancel=()=>{down=false;};
+}
+function pzWave(box,m){
+  const R=rng(m.seed),f0=2+R()*4,a0=0.35+R()*0.5;
+  let f=Math.max(1,Math.min(7,f0+(R()<.5?-2.2:2.2))),a=Math.max(0.15,Math.min(1,a0+(R()<.5?-0.4:0.4)));
+  box.innerHTML='<p style="color:var(--mute);margin:0 0 10px">Move the sliders until your wave (amber) sits exactly on the incoming signal (cyan). Hold it steady to lock.</p>'+
+    '<canvas id="wvC" width="520" height="220"></canvas>'+
+    '<label class="slab">Frequency<input type="range" id="wvF" min="1" max="7" step="0.01" value="'+f+'"></label>'+
+    '<label class="slab">Amplitude<input type="range" id="wvA" min="0.15" max="1" step="0.005" value="'+a+'"></label>'+
+    '<div class="bar" style="margin-top:6px"><i id="wvLock" style="width:0%"></i></div><small id="wvTxt">Signal lost</small>';
+  const cv=$('#wvC'),cx=cv.getContext('2d');let t0=performance.now(),last=t0,hold=0,locked=false;
+  const wave=(fr,am,ph,col,w)=>{
+    const W=cv.width,H=cv.height;cx.beginPath();
+    for(let x=0;x<=W;x+=3){const y=H/2-Math.sin(2*Math.PI*fr*(x/W)+ph)*am*H*0.42;if(x===0)cx.moveTo(x,y);else cx.lineTo(x,y);}
+    cx.strokeStyle=col;cx.lineWidth=w;cx.lineCap='round';cx.stroke();
+  };
+  const draw=now=>{
+    if(!PZ.open||locked||!document.getElementById('wvC')) return;
+    const dt=Math.min(0.1,(now-last)/1000);last=now;
+    f=+$('#wvF').value;a=+$('#wvA').value;
+    const W=cv.width,H=cv.height,ph=(now-t0)/500;
+    cx.clearRect(0,0,W,H);cx.strokeStyle='rgba(92,225,230,.12)';cx.lineWidth=1;
+    for(let i=1;i<8;i++){cx.beginPath();cx.moveTo(i*W/8,0);cx.lineTo(i*W/8,H);cx.stroke();}
+    cx.beginPath();cx.moveTo(0,H/2);cx.lineTo(W,H/2);cx.stroke();
+    wave(f0,a0,ph,'#3be8ff',8);wave(f,a,ph,'#ffc933',4);
+    const near=Math.abs(f-f0)<0.12&&Math.abs(a-a0)<0.05;
+    const q=Math.max(0,1-(Math.abs(f-f0)/1.5+Math.abs(a-a0)/0.35)/2);
+    hold=near?hold+dt:Math.max(0,hold-dt*2);
+    $('#wvLock').style.width=Math.min(100,hold/1.2*100)+'%';
+    $('#wvTxt').textContent=near?'Locking… hold steady':'Signal match '+Math.round(q*100)+'%';
+    if(hold>=1.2){locked=true;$('#wvTxt').textContent='Signal locked';pzSolved({solved:true});return;}
+    PZ.raf=requestAnimationFrame(draw);
+  };
+  PZ.raf=requestAnimationFrame(draw);
+}
+function syncOverlays(S){
+  const c=cornerHTML(S);
+  if(!PZ.open&&S.phase==='play'&&S.sab&&S.sab.comms&&S.sab.mine&&!S.sab.mine.done) pzOpen(true); /* Communications: the repair device shows only the puzzle, full screen */
+  setHTML($('#corner'),c);document.body.classList.toggle('has-corner',c!=='');
+  if(PZ.open&&!PZ.done&&(S.phase!=='play'||!S.sab||!S.sab.mine||S.sab.mine.done)) pzClose();
+}
+setInterval(()=>{ // auto-hide sensitive views if nobody touches the screen
+  if(RP.view!=='home'&&RP.deadline&&Date.now()>RP.deadline){rpReset();renderAll();}
+  document.querySelectorAll('.cd').forEach(e=>{
+    const left=Math.max(0,Math.ceil((+e.dataset.end-nowS())/1000));
+    e.textContent=(left===0&&e.dataset.zero)?e.dataset.zero:fmt(left);
+  });
+  if(MODE==='host') hostTick();
+},500);
+
+/* =====================================================================
+   HOST: networking
+   ===================================================================== */
+const Net={status:'starting',conns:{},lastSeen:{},peer:null,id:null,relay:{},mode:'',err:''};
+const HU={tab:'devices',long:[],reveal:null,revealTimer:null,vote:null,em:false,emErr:null,codeErr:null,lastLink:'',qr:''};
+function hostLocalRpc(type,p){
+  return new Promise(res=>{
+    let r;try{r=handleRpc(type,p,{from:'host',room:G.hostRoom});}catch(e){console.error(e);r=fail('Something went wrong.');}
+    commit();res(r);
+  });
+}
+function roomOfDevice(id){return G.devices[id]?G.devices[id].room:null;}
+function connectedRooms(){return Object.keys(Net.conns).map(roomOfDevice).filter(Boolean);}
+function broadcast(){
+  Object.keys(Net.conns).forEach(id=>{
+    try{Net.conns[id].send({t:'state',s:viewState(roomOfDevice(id))});}catch(e){}
+  });
+}
+function hostHandle(conn,dev,msg){
+  if(!msg) return dev;
+  if(msg.t==='hello'){
+    dev=String(msg.deviceId||'');if(!dev) return null;
+    const old=Net.conns[dev];Net.conns[dev]=conn;if(old&&old!==conn){try{old.close();}catch(e){}}
+    if(!G.devices[dev]){G.devN++;G.devices[dev]={room:null,label:'Device '+G.devN};}
+    Net.lastSeen[dev]=Date.now();commit();return dev;
+  }
+  if(!dev) return dev;
+  Net.lastSeen[dev]=Date.now();
+  if(msg.t==='ping'){try{conn.send({t:'pong'});}catch(e){}}
+  else if(msg.t==='rpc'){
+    let r;try{r=handleRpc(msg.type,msg.p||{},{from:dev,room:roomOfDevice(dev)});}catch(e){console.error(e);r=fail('Something went wrong.');}
+    try{conn.send({t:'res',id:msg.id,r:r});}catch(e){}
+    commit();
+  }
+  return dev;
+}
+async function startHost(){
+  let id=null;try{id=localStorage.getItem('sus_in_hostel_id');}catch(e){}
+  if(!id){id='sus-'+rid(5);try{localStorage.setItem('sus_in_hostel_id',id);}catch(e){}}
+  Net.id=id;
+  RELAY=await relayProbe;
+  if(RELAY){Net.mode='relay';startHostRelay();}
+  else{Net.status='noserver';Net.err='This page is not running from the Sus in Hostel server. Open the server address instead of the HTML file.';}
+  renderAll();
+}
+function startHostRelay(){
+  const es=new EventSource('/sse?role=host&id='+encodeURIComponent(Net.id));Net.es=es;
+  es.onopen=()=>{Net.status='online';Net.err='';renderAll();};
+  es.onerror=()=>{Net.status='reconnecting';Net.err='Lost contact with the server.';renderAll();};
+  es.onmessage=ev=>{
+    let m;try{m=JSON.parse(ev.data);}catch(e){return;}
+    const dev=m.dev;if(!dev||!m.msg) return;
+    let c=Net.relay[dev];
+    if(!c){c=Net.relay[dev]={open:true,send:x=>relaySend({role:'host',id:Net.id,to:dev,msg:x}),close:function(){}};}
+    if(m.msg.t==='_close'){if(Net.conns[dev]===c){delete Net.conns[dev];commit();}return;}
+    hostHandle(c,dev,m.msg);
+  };
+}
+function hostTick(){
+  let changed=false;
+  Object.keys(Net.conns).forEach(id=>{if(Date.now()-(Net.lastSeen[id]||0)>20000){try{Net.conns[id].close();}catch(e){}delete Net.conns[id];changed=true;}});
+  if(tickEngine())changed=true;
+  if(changed)commit();
+}
+hooks.commit=function(){broadcast();renderAll();};
+
+/* =====================================================================
+   HOST: screens
+   ===================================================================== */
+function joinLink(){
+  if(!Net.id) return 'Starting…';
+  let base=location.href.split('#')[0].split('?')[0];
+  if(RELAY&&/^(localhost|127\.|\[::1\])/.test(location.hostname)&&RELAY.ips&&RELAY.ips.length)
+    base=location.protocol+'//'+RELAY.ips[0]+(location.port?':'+location.port:'')+'/';
+  return base+'?join='+Net.id;
+}
+function qrSvg(text){
+  if(HU.lastLink===text&&HU.qr) return HU.qr;
+  try{const q=qrcode(0,'M');q.addData(text);q.make();HU.qr=q.createSvgTag(4,0);HU.lastLink=text;}catch(e){HU.qr='';}
+  return HU.qr;
+}
+function hostHeader(){
+  const st={online:['on','Online · room devices can join'],starting:['warn','Starting…'],reconnecting:['warn','Reconnecting…'],noserver:['',Net.err||'Server not found']}[Net.status]||['',''];
+  return '<div class="top"><div class="brand">Sus in <i>Hostel</i></div><div class="badge"><span class="dot '+st[0]+'"></span>'+st[1]+'</div></div>';
+}
+const RULES=[
+  ['maxPlayers','Max players','Registration closes at this number',3,30,1],
+  ['imposters','Imposters','Must be fewer than half of the players',1,6,1],
+  ['emergencyMeetings','Emergency meetings per player','Only the host device can call them',0,5,1],
+  ['tasksPerPlayer','Tasks per player','Workload for everyone – a long task counts as 2–3 short ones',1,15,1],
+  ['discussSec','Discussion time (seconds)','Before voting opens',15,600,15],
+  ['sabCooldown','Sabotage cooldown (seconds)','Before the first and between sabotages',0,300,5]
+];
+const TOGGLES=[
+  ['taskRoomLock','Tick tasks only in their own room','A task can only be ticked on the device in its room'],
+  ['showProgress','Show task progress bar','Shared task progress of living crewmates'],
+  ['anonymousVotes','Anonymous votes','Hide who voted for whom'],
+  ['confirmEjects','Reveal role of ejected player','Tell everyone if they were an imposter']
+];
+function roomOptions(sel,withHost){
+  const list=(withHost?[G.hostRoom]:[]).concat(G.rooms);
+  return list.map(r=>'<option value="'+esc(r)+'"'+(r===sel?' selected':'')+'>'+esc(r)+'</option>').join('');
+}
+function tabDevices(){
+  const link=joinLink();
+  let h='';
+  if(Net.mode!=='relay'&&Net.status!=='starting') h+='<div class="note"><b>Open this page from the server.</b> Run <code>node server.js</code> (or deploy it online) and open the server address in your browser. Opening the HTML file directly cannot connect devices.</div>';
+  h+='<div class="card"><h3>Connect the room devices</h3><p>Open this link on the laptop or tablet in every room. Then pick that device’s room here (or on the device itself).</p>'+
+    '<div class="linkbox"><code>'+esc(link)+'</code><button class="btn" data-act="copy_link">Copy</button></div>'+
+    (Net.err?'<small style="margin-top:8px;color:var(--signal)">'+esc(Net.err)+'</small>':'')+
+    (Net.id&&qrSvg(link)?'<div class="qr">'+qrSvg(link)+'</div>':'')+'</div>';
+  const devs=Object.keys(G.devices);
+  h+='<div class="card"><h3>Devices ('+Object.keys(Net.conns).length+' online)</h3>';
+  if(!devs.length) h+='<div class="empty">No device has connected yet.</div>';
+  devs.forEach(id=>{
+    const d=G.devices[id],on=!!Net.conns[id];
+    h+='<div class="row dev"><span class="dot '+(on?'on':'')+'"></span><b>'+esc(d.label)+'</b>'+
+      '<select data-chg="dev_room" data-id="'+id+'"><option value="">— choose room —</option>'+roomOptions(d.room,false)+'</select>'+
+      (on?'':'<button class="sb" title="Remove" data-act="dev_del" data-id="'+id+'">✕</button>')+'</div>';
+  });
+  h+='</div>';
+  h+='<div class="card"><h3>Rooms</h3><p>This host device sits in the meeting room. Add one room per extra device.</p>'+
+    '<label style="display:grid;gap:5px;font-size:13px;color:var(--mute);margin-bottom:12px">Meeting room (this device)'+
+    '<input id="hostRoomIn" data-keep value="'+esc(G.hostRoom)+'" data-enter="host_room_save" maxlength="24"></label>'+
+    '<button class="btn" style="margin-bottom:12px" data-act="host_room_save">Rename meeting room</button>'+
+    '<div class="form"><label>New room<input id="roomIn" data-keep maxlength="24" placeholder="e.g. Room 204" data-enter="room_add"></label><button class="btn primary" data-act="room_add">Add room</button></div>'+
+    '<div class="chips">'+G.rooms.map(r=>'<span class="chip">'+esc(r)+'<button title="Delete" data-act="room_del" data-r="'+esc(r)+'">✕</button></span>').join('')+'</div></div>';
+  return h;
+}
+function tabRules(){
+  let h='<div class="card"><h3>Game rules</h3>';
+  h+=RULES.map(r=>'<div class="row"><div><b>'+r[1]+'</b><small>'+r[2]+'</small></div><div class="stepper"><button class="sb" data-act="rule" data-k="'+r[0]+'" data-d="-'+r[5]+'">−</button><span>'+G.cfg[r[0]]+'</span><button class="sb" data-act="rule" data-k="'+r[0]+'" data-d="'+r[5]+'">+</button></div></div>').join('');
+  h+=TOGGLES.map(t=>'<div class="row"><div><b>'+t[1]+'</b><small>'+t[2]+'</small></div><button class="sw '+(G.cfg[t[0]]?'on':'')+'" aria-label="'+t[1]+'" data-act="toggle" data-k="'+t[0]+'"></button></div>').join('');
+  return h+'</div>';
+}
+const PUZLABEL={code:'6-digit code',match:'Wire match',dust:'Clear dust & pollution',wave:'Wavelength (communications)'};
+function tabTasks(){
+  const valid=new Set(allRooms());
+  let h='<div class="card"><h3>Tasks</h3><p>Every player gets a random set. Imposters get tasks too, but theirs never count. A limit gives that task to only that many players.</p>'+
+    '<div class="form"><label>Task<input id="tName" data-keep maxlength="40" placeholder="e.g. Refill the water jug" data-enter="task_add"></label>'+
+    '<label>Room<select id="tRoom" data-keep style="max-width:none;width:100%">'+roomOptions('',true)+'</select></label>'+
+    '<label>Limit (0 = everyone)<input id="tMax" data-keep type="number" inputmode="numeric" min="0" max="30" value="0"></label>'+
+    '<button class="btn primary" data-act="task_add">Add task</button></div>';
+  if(!G.tasks.length) h+='<div class="empty">No tasks yet.</div>';
+  h+=G.tasks.map(t=>{
+    const bad=t.parts.some(x=>!valid.has(x.room));
+    return '<div class="row"><div><b>'+esc(t.name)+'</b>'+(t.parts.length>1?' <span class="tag">long · '+t.parts.length+' steps</span>':'')+
+      '<small style="'+(bad?'color:var(--signal)':'')+'">'+t.parts.map(x=>esc(x.room)).join(' → ')+(bad?' – room no longer exists':'')+'</small></div>'+
+      '<div class="stepper"><button class="sb" data-act="task_lim" data-id="'+t.id+'" data-d="-1">−</button><span style="min-width:64px;font-size:14px">'+(t.max?'max '+t.max:'everyone')+'</span><button class="sb" data-act="task_lim" data-id="'+t.id+'" data-d="1">+</button><button class="sb" data-act="task_del" data-id="'+t.id+'">✕</button></div></div>';
+  }).join('');
+  h+='</div>';
+  h+='<div class="card"><h3>Long tasks</h3><p>One task split into steps in different rooms. Players finish each step in its own room.</p>'+
+    '<div class="form"><label>Long task name<input id="lName" data-keep maxlength="40" placeholder="e.g. Deliver the parcel"></label>'+
+    '<label>Limit (0 = everyone)<input id="lMax" data-keep type="number" inputmode="numeric" min="0" max="30" value="0"></label></div>'+
+    '<div class="form"><label>Step room<select id="lRoom" data-keep style="max-width:none;width:100%">'+roomOptions('',true)+'</select></label>'+
+    '<label>What to do there (optional)<input id="lLabel" data-keep maxlength="40" placeholder="e.g. Collect the parcel" data-enter="long_step_add"></label>'+
+    '<button class="btn" data-act="long_step_add">Add step</button></div>';
+  h+=HU.long.length?'<div class="chips">'+HU.long.map((s,i)=>'<span class="chip">'+(i+1)+'. '+esc(s.room)+(s.label?' – '+esc(s.label):'')+'<button title="Remove step" data-act="long_step_del" data-i="'+i+'">✕</button></span>').join('')+'</div>':'<div class="empty">Add at least 2 steps.</div>';
+  h+='<button class="btn primary" style="margin-top:12px" data-act="long_add">Add long task</button></div>';
+  h+='<div class="card"><h3>Sabotages</h3><p>Pick the repair puzzle. A two-device sabotage needs both repair rooms to solve it. <b>Wavelength</b> is Communications: every other device goes dark until it is fixed (one repair room, no timer).</p>'+
+    '<div class="form"><label>Name<input id="sName" data-keep maxlength="30" placeholder="e.g. Power cut"></label>'+
+    '<label>Repair puzzle<select id="sPz" data-keep style="max-width:none;width:100%"><option value="code">6-digit code</option><option value="match">Wire match</option><option value="dust">Clear dust &amp; pollution</option><option value="wave">Wavelength (communications)</option></select></label>'+
+    '<label>Type<select id="sType" data-keep style="max-width:none;width:100%"><option value="2">Two devices</option><option value="1">One device</option></select></label>'+
+    '<label>Repair room A<select id="sA" data-keep style="max-width:none;width:100%">'+roomOptions('',true)+'</select></label>'+
+    '<label>Repair room B<select id="sB" data-keep style="max-width:none;width:100%">'+roomOptions('',true)+'</select></label>'+
+    '<label>Time to fix (sec)<input id="sSec" data-keep type="number" inputmode="numeric" value="90" min="15" max="600"></label>'+
+    '<button class="btn primary" data-act="sab_add">Add sabotage</button></div>';
+  if(!G.sabotages.length) h+='<div class="empty">No sabotages yet.</div>';
+  h+=G.sabotages.map(s=>{
+    const wave=s.puzzle==='wave';
+    return '<div class="row"><div><b>'+esc(s.name)+'</b><small>'+sabRooms(s).map(esc).join(' + ')+' · '+(wave?'no timer · other devices go dark':s.seconds+'s')+' · '+esc(PUZLABEL[s.puzzle]||'6-digit code')+(s.dual&&!wave?' · two devices':'')+'</small></div><button class="sb" data-act="sab_del" data-id="'+s.id+'">✕</button></div>';
+  }).join('');
+  return h+'</div>';
+}
+function tabPlayers(){
+  let h='<div class="card"><h3>Register players ('+G.players.length+' / '+G.cfg.maxPlayers+')</h3><p>Each player picks a short secret code ID (3–6 letters or numbers) and keeps it to themselves.</p>'+
+    '<div class="form"><label>Name<input id="pName" data-keep maxlength="16" autocomplete="off" placeholder="Your name"></label>'+
+    '<label>Secret code ID<input id="pCode" data-keep type="password" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="••••"></label>'+
+    '<label>Repeat code ID<input id="pCode2" data-keep type="password" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="••••" data-enter="player_add"></label>'+
+    '<button class="btn primary" data-act="player_add">Register</button></div>';
+  if(!G.players.length) h+='<div class="empty">Nobody has registered yet.</div>';
+  h+='<div class="chips">'+G.players.map(p=>'<span class="chip">'+esc(p.name)+'<button title="Remove" data-act="player_del" data-id="'+p.id+'">✕</button></span>').join('')+'</div></div>';
+  return h;
+}
+function hLobby(){
+  const tabs=[['devices','Devices'],['rules','Rules'],['tasks','Tasks & sabotage'],['players','Players']];
+  let h='<div class="tabs">'+tabs.map(t=>'<button class="tab '+(HU.tab===t[0]?'on':'')+'" data-act="tab" data-t="'+t[0]+'">'+t[1]+'</button>').join('')+'</div>';
+  h+={devices:tabDevices,rules:tabRules,tasks:tabTasks,players:tabPlayers}[HU.tab]();
+  h+='<div class="foot"><button data-act="reset_all">Reset all saved data</button></div>';
+  return h;
+}
+function startBar(){
+  return '<div class="startbar"><div class="in"><small>'+G.players.length+' players · '+G.cfg.imposters+' imposter'+(G.cfg.imposters===1?'':'s')+' · '+G.tasks.length+' tasks · '+Object.keys(Net.conns).length+' device'+(Object.keys(Net.conns).length===1?'':'s')+' online</small><button class="btn primary big" data-act="start">Start game</button></div></div>';
+}
+function hReveal(S){
+  let h='<div class="hero"><h1>Check your role</h1><p>One at a time: enter your code ID on this device. Make sure nobody is peeking.</p></div>';
+  h+='<div class="card"><h3>Who has seen their role</h3><div class="chips">'+S.players.map(p=>'<span class="chip '+(p.seen?'seen':'')+'">'+(p.seen?'✔ ':'')+esc(p.name)+'</span>').join('')+'</div><small style="margin-top:10px">The game starts automatically when everyone has checked.</small></div>';
+  if(HU.reveal){
+    const d=HU.reveal,imp=d.role==='imp';
+    h+='<div class="hero '+(imp?'red':'crew')+'"><small>'+esc(d.name)+', you are</small><h1>'+(imp?'Imposter':'Crewmate')+'</h1>';
+    if(imp) h+='<p>'+(d.mates.length?'Your fellow imposters:':'You are the only imposter.')+'</p>'+(d.mates.length?'<div class="mates">'+d.mates.map(m=>'<span class="chip">'+esc(m)+'</span>').join('')+'</div>':'');
+    else h+='<p>Complete your tasks and find the imposters.</p>';
+    h+='<div style="margin-top:14px">'+d.tasks.map(t=>'<div class="result-row"><span>'+esc(t.name)+'</span><span class="tag">'+t.parts.map(x=>esc(x.room)).join(' → ')+'</span></div>').join('')+'</div>';
+    h+='<button class="btn primary block big" style="margin-top:16px" data-act="reveal_hide">Hide and continue</button></div>';
+  }else{
+    h+='<div class="card"><h3>Enter your code ID</h3><input id="revCode" data-keep type="password" class="codein" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="••••" data-enter="reveal_go">'+
+      (HU.codeErr?'<div class="err">'+esc(HU.codeErr)+'</div>':'')+'<button class="btn primary block" style="margin-top:12px" data-act="reveal_go">Show my role</button></div>';
+  }
+  h+='<div class="foot"><button data-act="abort">Cancel game</button></div>';
+  return h;
+}
+function playersChips(S){return '<div class="chips">'+S.players.map(p=>'<span class="chip '+(p.alive?'':'dead')+'">'+esc(p.name)+(p.alive&&S.cfg.emergencyMeetings>0?' <small style="display:inline">📣'+p.meetings+'</small>':'')+'</span>').join('')+'</div>';}
+function hPlay(S){
+  const alive=S.players.filter(p=>p.alive).length;
+  let h='';
+  if(S.progress){const pc=S.progress.total?Math.round(S.progress.done/S.progress.total*100):0;
+    h+='<div class="card"><h3>Crew task progress</h3><p>'+S.progress.done+' of '+S.progress.total+' tasks done by living crewmates</p><div class="bar"><i style="width:'+pc+'%"></i></div></div>';}
+  h+='<div class="card"><h3>Players alive: '+alive+' / '+S.players.length+'</h3><p>📣 shows emergency meetings left.</p>'+playersChips(S)+'</div>';
+  h+='<div class="card"><div class="roomhd"><div><small>This device is in</small><b>'+esc(S.hostRoom)+'</b></div></div>'+roomPanelHTML(S)+'</div>';
+  h+='<div class="card"><h3>Emergency meeting</h3>';
+  if(HU.em){
+    h+='<p>Enter the code ID of the player calling it.</p><input id="emCode" data-keep type="password" class="codein" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="••••" data-enter="em_go">'+
+      (HU.emErr?'<div class="err">'+esc(HU.emErr)+'</div>':'')+
+      '<div style="display:flex;gap:10px;margin-top:12px"><button class="btn ghost" data-act="em_cancel">Cancel</button><button class="btn danger" style="flex:1" data-act="em_go">Call meeting</button></div>';
+  }else h+='<p>Only this host device can call one. Not possible during a sabotage.</p><button class="btn danger block" data-act="em_open"'+(S.sab?' disabled':'')+'>Call emergency meeting</button>';
+  h+='</div><div class="foot"><button data-act="abort">End game and return to setup</button></div>';
+  return h;
+}
+function meetingTitle(S){
+  const m=S.meeting||{};
+  if(m.kind==='body'){
+    if(m.reporter&&m.body) return '<h1>Body reported</h1><p><b>'+esc(m.reporter)+'</b> found <b>'+esc(m.body)+'</b> dead in '+esc(m.room)+'.</p>';
+    return '<h1>Body reported</h1><p>A body was found dead in <b>'+esc(m.room)+'</b>.</p>';
+  }
+  return '<h1>Emergency meeting</h1><p>Called by <b>'+esc((m||{}).reporter)+'</b>.</p>';
+}
+function hGather(S){
+  return '<div class="hero red">'+meetingTitle(S)+'<p>Everyone go to <b>'+esc(S.hostRoom)+'</b> now.</p></div>'+
+    '<button class="btn primary big block" data-act="m_start">Everyone is here – start meeting</button>';
+}
+function hRegister(S){
+  const alive=S.players.filter(p=>p.alive),dead=S.players.filter(p=>!p.alive);
+  let h='<div class="hero gold"><h1>Register the dead</h1><p>Tick anyone who is dead but was not reported or registered.</p></div><div class="card">';
+  h+=alive.map(p=>'<label class="row" style="cursor:pointer"><b>'+esc(p.name)+'</b><input type="checkbox" class="deadchk" id="dc_'+p.id+'" data-keep data-id="'+p.id+'" style="width:28px;height:28px;min-height:0"></label>').join('')||'<div class="empty">Everyone is registered dead.</div>';
+  h+='</div>'+(dead.length?'<div class="card"><h3>Already dead</h3><div class="chips">'+dead.map(p=>'<span class="chip dead">'+esc(p.name)+'</span>').join('')+'</div></div>':'');
+  return h+'<button class="btn primary big block" data-act="m_registered">Confirm and start discussion</button>';
+}
+function hDiscuss(S){
+  return '<div class="hero gold"><small>Discussion</small><div class="timer cd" data-end="'+S.meeting.discussEnds+'" data-zero="0:00"></div><p>Talk it out. Voting happens one by one on this device.</p></div>'+
+    '<div class="card"><h3>Still alive</h3>'+playersChips(S)+'</div><button class="btn primary big block" data-act="m_vote">Start voting</button>';
+}
+function hVote(S){
+  const alivePs=S.players.filter(p=>p.alive);
+  let h='<div class="hero gold"><h1>Voting</h1><p>Enter your code ID, then choose who to eject.</p></div>';
+  h+='<div class="card"><h3>'+alivePs.filter(p=>p.voted).length+' of '+alivePs.length+' voted</h3><div class="chips">'+alivePs.map(p=>'<span class="chip '+(p.voted?'voted':'')+'">'+(p.voted?'✔ ':'')+esc(p.name)+'</span>').join('')+'</div></div>';
+  if(HU.vote){
+    h+='<div class="card"><h3>'+esc(HU.vote.name)+', choose</h3><div class="pick">'+HU.vote.candidates.map(c=>'<button class="btn block" data-act="vote_cast" data-id="'+c.id+'">'+esc(c.name)+'</button>').join('')+'<button class="btn hazard block" data-act="vote_cast" data-id="skip">Skip vote</button></div>'+(HU.codeErr?'<div class="err">'+esc(HU.codeErr)+'</div>':'')+'</div>';
+  }else{
+    h+='<div class="card"><h3>Your code ID</h3><input id="voteCode" data-keep type="password" class="codein" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="••••" data-enter="vote_go">'+(HU.codeErr?'<div class="err">'+esc(HU.codeErr)+'</div>':'')+'<button class="btn primary block" style="margin-top:12px" data-act="vote_go">Open my ballot</button></div>';
+  }
+  return h+'<button class="btn ghost block" data-act="vote_finish">Finish voting now</button>';
+}
+function hResult(S){
+  const r=S.result;let t;
+  if(r.ejected){t='<h1>'+esc(r.ejected)+' was ejected</h1>'+(r.wasImp===null?'':'<p>'+esc(r.ejected)+' was '+(r.wasImp?'an Imposter.':'not an Imposter.')+'</p>');}
+  else t='<h1>No one was ejected</h1><p>'+(r.tie?'The vote was tied.':'The vote was skipped.')+'</p>';
+  let h='<div class="hero '+(r.ejected?'red':'gold')+'">'+t+'</div><div class="card"><h3>Votes</h3>'+
+    r.counts.map(c=>'<div class="result-row"><span>'+esc(c.name)+'</span><b>'+c.count+'</b></div>').join('')+
+    '<div class="result-row"><span>Skipped</span><b>'+r.skip+'</b></div>';
+  if(r.voters) h+='<h3 style="margin-top:14px">Who voted for whom</h3>'+r.voters.map(v=>'<div class="result-row"><span>'+esc(v.voter)+'</span><span>'+esc(v.target)+'</span></div>').join('');
+  return h+'</div><button class="btn primary big block" data-act="m_continue">Continue game</button>';
+}
+function hOver(S){
+  const w=S.winner;
+  let h='<div class="hero '+(w.w==='crew'?'crew':'red')+'"><small>Game over</small><h1>'+(w.w==='crew'?'Crewmates win':'Imposters win')+'</h1><p>'+esc(w.why)+'</p></div>';
+  h+='<div class="card"><h3>The roles</h3>'+S.roles.map(p=>'<div class="result-row"><span '+(p.alive?'':'style="opacity:.55"')+'>'+esc(p.name)+(p.alive?'':' (dead)')+'</span><b style="color:'+(p.role==='imp'?'var(--signal)':'var(--crew)')+'">'+(p.role==='imp'?'Imposter':'Crewmate')+'</b></div>').join('')+'</div>';
+  return h+'<button class="btn primary big block" data-act="new_game">Back to setup for a new game</button>';
+}
+
+/* ---------- host actions ---------- */
+ACT.tab=b=>{HU.tab=b.dataset.t;renderAll();};
+ACT.copy_link=()=>{const l=joinLink();(navigator.clipboard?navigator.clipboard.writeText(l):Promise.reject()).then(()=>toast('Link copied','good')).catch(()=>prompt('Copy this link:',l));};
+ACT.dev_room=el=>{if(G.devices[el.dataset.id])G.devices[el.dataset.id].room=el.value||null;commit();};
+ACT.dev_del=b=>{delete G.devices[b.dataset.id];commit();};
+ACT.host_room_save=()=>{const r=renameRoom(G.hostRoom,val('hostRoomIn'));if(r!=='ok')toast(r,'bad');else toast('Renamed','good');commit();};
+ACT.room_add=()=>{
+  const n=val('roomIn').trim();if(!n){toast('Type a room name.','bad');return;}
+  if(allRooms().some(r=>r.toLowerCase()===n.toLowerCase())){toast('That room already exists.','bad');return;}
+  G.rooms.push(n);clr('roomIn');commit();
+};
+ACT.room_del=b=>{
+  const r=b.dataset.r,nt=G.tasks.filter(t=>t.parts.some(x=>x.room===r)).length,ns=G.sabotages.filter(s=>sabRooms(s).indexOf(r)>=0).length;
+  if((nt||ns)&&!confirm('Deleting "'+r+'" also removes '+nt+' task(s) and '+ns+' sabotage(s) in it. Continue?'))return;
+  G.rooms=G.rooms.filter(x=>x!==r);G.tasks=G.tasks.filter(t=>!t.parts.some(x=>x.room===r));
+  G.sabotages=G.sabotages.filter(s=>sabRooms(s).indexOf(r)<0);
+  Object.values(G.devices).forEach(d=>{if(d.room===r)d.room=null;});commit();
+};
+ACT.rule=b=>{
+  const def=RULES.find(r=>r[0]===b.dataset.k);let v=G.cfg[def[0]]+Number(b.dataset.d);
+  v=Math.max(def[3],Math.min(def[4],v));G.cfg[def[0]]=v;commit();
+};
+ACT.toggle=b=>{G.cfg[b.dataset.k]=!G.cfg[b.dataset.k];commit();};
+ACT.task_add=()=>{
+  const n=val('tName').trim(),r=val('tRoom'),mx=Math.max(0,Math.min(30,parseInt(val('tMax'),10)||0));
+  if(!n){toast('Type the task.','bad');return;}if(!r){toast('Add a room first.','bad');return;}
+  G.tasks.push({id:'t'+rid(5),name:n,max:mx,parts:[{room:r,label:''}]});clr('tName');commit();
+};
+ACT.task_del=b=>{G.tasks=G.tasks.filter(t=>t.id!==b.dataset.id);commit();};
+ACT.task_lim=b=>{const t=G.tasks.find(x=>x.id===b.dataset.id);if(!t)return;t.max=Math.max(0,Math.min(30,(t.max||0)+Number(b.dataset.d)));commit();};
+ACT.long_step_add=()=>{const r=val('lRoom');if(!r){toast('Add a room first.','bad');return;}HU.long.push({room:r,label:val('lLabel').trim()});clr('lLabel');commit();};
+ACT.long_step_del=b=>{HU.long.splice(Number(b.dataset.i),1);commit();};
+ACT.long_add=()=>{
+  const n=val('lName').trim(),mx=Math.max(0,Math.min(30,parseInt(val('lMax'),10)||0));
+  if(!n){toast('Name the long task.','bad');return;}
+  if(HU.long.length<2){toast('A long task needs at least 2 steps.','bad');return;}
+  G.tasks.push({id:'t'+rid(5),name:n,max:mx,parts:HU.long.map(s=>({room:s.room,label:s.label}))});
+  HU.long=[];clr('lName');commit();toast('Long task added','good');
+};
+ACT.sab_add=()=>{
+  const n=val('sName').trim(),pz=val('sPz')||'code',wave=pz==='wave',dual=!wave&&val('sType')==='2',a=val('sA'),b2=val('sB');
+  const sec=wave?0:Math.max(15,Math.min(600,parseInt(val('sSec'),10)||90));
+  if(!n){toast('Name the sabotage.','bad');return;}if(!a){toast('Add a room first.','bad');return;}
+  if(dual&&(a===b2||!b2)){toast('Pick two different repair rooms.','bad');return;}
+  G.sabotages.push({id:'s'+rid(5),name:n,puzzle:pz,dual:dual,roomA:a,roomB:dual?b2:'',seconds:sec});clr('sName');commit();
+};
+ACT.sab_del=b=>{G.sabotages=G.sabotages.filter(s=>s.id!==b.dataset.id);commit();};
+ACT.player_add=()=>{
+  if(val('pCode').trim().toUpperCase()!==val('pCode2').trim().toUpperCase()){toast('The two code IDs do not match.','bad');return;}
+  const e=registerPlayer(val('pName'),val('pCode'));
+  if(e){toast(e,'bad');return;}
+  clr('pName');clr('pCode');clr('pCode2');toast('Registered','good');commit();
+  setTimeout(()=>{const i=$('#pName');if(i)i.focus();},30);
+};
+ACT.player_del=b=>{G.players=G.players.filter(p=>p.id!==b.dataset.id);commit();};
+ACT.reset_all=()=>{if(confirm('Delete players, rooms, tasks and settings and start from scratch?')){const id=Net.id;G=defaults();commit();}};
+ACT.start=()=>{
+  const v=validateStart(connectedRooms());
+  if(v.e.length){toast(v.e[0],'bad');if(v.e.length>1)setTimeout(()=>toast(v.e[1],'bad'),300);return;}
+  if(v.w.length&&!confirm('Before you start:\n\n• '+v.w.join('\n• ')+'\n\nStart anyway?'))return;
+  startGame();HU.reveal=null;HU.codeErr=null;commit();
+};
+ACT.abort=()=>{if(confirm('Stop this game and go back to setup?')){resetToLobby();HU.reveal=null;HU.vote=null;commit();}};
+ACT.new_game=()=>{resetToLobby();commit();};
+ACT.reveal_go=async()=>{
+  const code=val('revCode');const r=await hostLocalRpc('reveal',{code:code});
+  if(!r.ok){HU.codeErr=r.error;clr('revCode');renderAll();return;}
+  HU.codeErr=null;HU.reveal=Object.assign({code:code},r.data);
+  clearTimeout(HU.revealTimer);HU.revealTimer=setTimeout(()=>ACT.reveal_hide(),25000);renderAll();
+};
+ACT.reveal_hide=async()=>{
+  if(!HU.reveal)return;const c=HU.reveal.code;HU.reveal=null;clearTimeout(HU.revealTimer);
+  const r=await hostLocalRpc('revealDone',{code:c});
+  if(r.ok&&r.data.started)toast('All roles seen – the game has started!','good');
+  renderAll();
+};
+ACT.em_open=()=>{HU.em=true;HU.emErr=null;renderAll();setTimeout(()=>{const i=$('#emCode');if(i)i.focus();},40);};
+ACT.em_cancel=()=>{HU.em=false;HU.emErr=null;renderAll();};
+ACT.em_go=async()=>{
+  const r=await hostLocalRpc('emergency',{code:val('emCode')});
+  if(!r.ok){HU.emErr=r.error;clr('emCode');renderAll();return;}
+  HU.em=false;HU.emErr=null;renderAll();
+};
+ACT.m_start=()=>{meetingStart();commit();};
+ACT.m_registered=()=>{
+  const ids=[...document.querySelectorAll('.deadchk:checked')].map(c=>c.dataset.id);
+  registerDeadDone(ids);commit();
+};
+ACT.m_vote=()=>{startVote();HU.vote=null;HU.codeErr=null;commit();};
+ACT.vote_go=async()=>{
+  const r=await hostLocalRpc('voteAuth',{code:val('voteCode')});
+  if(!r.ok){HU.codeErr=r.error;clr('voteCode');renderAll();return;}
+  HU.codeErr=null;HU.vote=Object.assign({code:val('voteCode')},r.data);renderAll();
+};
+ACT.vote_cast=async b=>{
+  const code=HU.vote.code;const r=await hostLocalRpc('castVote',{code:code,target:b.dataset.id});
+  if(!r.ok){HU.codeErr=r.error;HU.vote=null;renderAll();return;}
+  HU.vote=null;HU.codeErr=null;toast('Vote locked in','good');renderAll();
+};
+ACT.vote_finish=()=>{if(confirm('Close voting now? Players who have not voted will not count.')){finishVote();HU.vote=null;commit();}};
+ACT.m_continue=()=>{resultContinue();commit();};
+
+function renderHost(){
+  const S=viewState(G.hostRoom);CLOCK.offset=0;
+  if(S.phase!=='reveal'&&HU.reveal){HU.reveal=null;}
+  if(S.phase!=='vote')HU.vote=null;
+  let body='';
+  switch(S.phase){
+    case 'lobby':body=hLobby(S);break;
+    case 'reveal':body=hReveal(S);break;
+    case 'play':body=hPlay(S);break;
+    case 'gather':body=hGather(S);break;
+    case 'register':body=hRegister(S);break;
+    case 'discuss':body=hDiscuss(S);break;
+    case 'vote':body=hVote(S);break;
+    case 'result':body=hResult(S);break;
+    case 'over':body=hOver(S);break;
+  }
+  setHTML($('#app'),hostHeader()+body+(S.phase==='lobby'?startBar():''));
+  applySiren(S);syncOverlays(S);
+}
+
+/* =====================================================================
+   ROOM DEVICE (client)
+   ===================================================================== */
+const Cl={deviceId:null,hostId:null,started:false,connected:false,S:null,peer:null,es:null,conn:null,pend:{},n:0,lastMsg:0,timer:null,repick:false,err:''};
+function clientInit(){
+  try{Cl.deviceId=sessionStorage.getItem('ih_dev');}catch(e){}
+  if(!Cl.deviceId){Cl.deviceId='d'+rid(8);try{sessionStorage.setItem('ih_dev',Cl.deviceId);}catch(e){}}
+  Cl.hostId=joinId();
+  setInterval(()=>{
+    if(!Cl.started)return;
+    if(Cl.connected&&Cl.conn&&Cl.conn.open){try{Cl.conn.send({t:'ping'});}catch(e){}}
+    if(Date.now()-Cl.lastMsg>12000&&Cl.connected){Cl.connected=false;renderAll();clConnect();}
+  },4000);
+}
+function clOnData(m){
+  Cl.lastMsg=Date.now();
+  if(m.t==='state'){Cl.S=m.s;CLOCK.offset=m.s.now-Date.now();Cl.connected=true;Cl.err='';renderAll();}
+  else if(m.t==='res'){const p=Cl.pend[m.id];if(p){clearTimeout(p.to);delete Cl.pend[m.id];p.res(m.r);}}
+}
+async function clConnect(){
+  clearTimeout(Cl.timer);
+  try{if(Cl.peer)Cl.peer.destroy();}catch(e){}
+  try{if(Cl.es)Cl.es.close();}catch(e){}
+  Cl.peer=null;Cl.es=null;Cl.conn=null;
+  const retry=(msg)=>{Cl.connected=false;if(msg)Cl.err=msg;renderAll();clearTimeout(Cl.timer);Cl.timer=setTimeout(clConnect,2500);};
+  RELAY=await relayProbe;
+  if(RELAY){
+    const es=new EventSource('/sse?role=client&id='+encodeURIComponent(Cl.hostId)+'&dev='+encodeURIComponent(Cl.deviceId));Cl.es=es;
+    const conn={open:false,send:m=>relaySend({role:'client',id:Cl.hostId,dev:Cl.deviceId,msg:m})};Cl.conn=conn;
+    const hello=()=>{
+      if(Cl.connected||Cl.es!==es) return;
+      conn.send({t:'hello',deviceId:Cl.deviceId}).then(r=>{
+        if(Cl.connected||Cl.es!==es) return;
+        if(r&&r.ok===false){Cl.err='The host is not online yet. Check the link, or wait for the host to open the game.';renderAll();}
+        clearTimeout(Cl.timer);Cl.timer=setTimeout(hello,2500);
+      });
+    };
+    es.onopen=()=>{conn.open=true;Cl.lastMsg=Date.now();hello();};
+    es.onmessage=ev=>{let m;try{m=JSON.parse(ev.data);}catch(e){return;}clOnData(m);};
+    es.onerror=()=>{conn.open=false;Cl.err='Lost contact with the server. Reconnecting…';Cl.connected=false;renderAll();};
+    return;
+  }
+  Cl.err='Cannot reach the server. Open the link given by the host (it must be the server address).';retry();
+}
+function clientRpc(type,p){
+  return new Promise(res=>{
+    if(!Cl.conn||!Cl.conn.open||!Cl.connected){res(fail('Not connected to the host. Wait a moment and try again.'));return;}
+    const id=++Cl.n;
+    Cl.pend[id]={res:res,to:setTimeout(()=>{delete Cl.pend[id];res(fail('The host did not answer. Try again.'));},8000)};
+    try{Cl.conn.send({t:'rpc',id:id,type:type,p:p});}catch(e){clearTimeout(Cl.pend[id].to);delete Cl.pend[id];res(fail('Connection problem.'));}
+  });
+}
+ACT.cl_start=()=>{Siren.unlock();keepAwake();Cl.started=true;Cl.lastMsg=Date.now();clConnect();renderAll();};
+ACT.cl_pick=async b=>{const r=await clientRpc('pickRoom',{room:b.dataset.r});if(!r.ok)toast(r.error,'bad');else Cl.repick=false;renderAll();};
+ACT.cl_repick=()=>{Cl.repick=true;renderAll();};
+ACT.cl_cancel=()=>{Cl.repick=false;renderAll();};
+
+function clHeader(S){
+  return '<div class="top"><div class="brand">Sus in <i>Hostel</i></div><div class="badge"><span class="dot '+(Cl.connected?'on':'warn')+'"></span>'+(S&&S.myRoom?esc(S.myRoom):'Room device')+'</div></div>';
+}
+function renderClient(){
+  let h='';
+  if(!Cl.hostId){h='<div class="hero red"><h1>Bad link</h1><p>Ask the host for the room-device link or QR code.</p></div>';}
+  else if(!Cl.started){
+    h='<div class="top"><div class="brand">Sus in <i>Hostel</i></div></div><div class="hero crew"><h1>Room device</h1><p>Place this laptop or tablet in its room. Keep the screen on and the sound up.</p></div>'+
+      '<button class="btn primary big block" data-act="cl_start">Connect this device</button>';
+  }else if(!Cl.connected||!Cl.S){
+    h=clHeader(null)+'<div class="card big-center"><div class="center-note">Connecting to the host…</div><small style="margin-top:8px">'+esc(Cl.err||'If this takes long, check that the host device is online.')+'</small></div>';
+  }else{
+    const S=Cl.S;h=clHeader(S);
+    if(S.phase==='lobby'||(!S.myRoom&&S.phase!=='lobby')){
+      if(!S.myRoom||Cl.repick){
+        if(S.phase!=='lobby') h+='<div class="card big-center"><div class="center-note">Waiting for the host to assign this device to a room.</div></div>';
+        else h+='<div class="card"><h3>Which room is this device in?</h3><p>Tap the room. The host can change it later.</p><div class="pick">'+
+          S.rooms.map(r=>'<button class="btn block" data-act="cl_pick" data-r="'+esc(r)+'"><span style="flex:1;text-align:left">'+esc(r)+'</span>'+(S.takenRooms.indexOf(r)>=0?'<span class="tag">has a device</span>':'')+'</button>').join('')+'</div>'+(Cl.repick?'<button class="btn ghost block" style="margin-top:10px" data-act="cl_cancel">Cancel</button>':'')+'</div>';
+      }else{
+        h+='<div class="hero crew"><small>This device is in</small><h1>'+esc(S.myRoom)+'</h1><p>Waiting for the host to start the game.</p></div><button class="btn ghost block" data-act="cl_repick">Change room</button>';
+      }
+    }else if(S.phase==='reveal'){
+      h+='<div class="hero gold"><h1>Roles are being revealed</h1><p>Go to the <b>'+esc(S.hostRoom)+'</b> and check your role on the host device.</p></div>';
+    }else if(S.phase==='play'){
+      h+='<div class="card">'+roomPanelHTML(S)+'</div>';
+      if(S.progress&&!isCommsDead(S)) h+='<div class="card"><h3>Crew task progress</h3><div class="bar"><i style="width:'+(S.progress.total?Math.round(S.progress.done/S.progress.total*100):0)+'%"></i></div></div>';
+    }else if(S.phase==='gather'){
+      h+='<div class="hero red">'+meetingTitle(S)+'<p>Go to <b>'+esc(S.hostRoom)+'</b> now.</p></div>';
+    }else if(S.phase==='over'){
+      h+='<div class="hero '+(S.winner.w==='crew'?'crew':'red')+'"><small>Game over</small><h1>'+(S.winner.w==='crew'?'Crewmates win':'Imposters win')+'</h1><p>'+esc(S.winner.why)+'</p></div>';
+    }else{
+      h+='<div class="hero gold"><h1>Meeting in progress</h1><p>Everything happens on the host device in <b>'+esc(S.hostRoom)+'</b>.</p></div>';
+    }
+  }
+  setHTML($('#app'),h);
+  if(Cl.S&&Cl.connected){applySiren(Cl.S);syncOverlays(Cl.S);}else{Siren.set(null);$('#siren').className='';syncOverlays({phase:'x',sab:null});}
+}
+
+function renderAll(){if(MODE==='host')renderHost();else renderClient();}
+
+/* ---------- boot ---------- */
+if(MODE==='host'){keepAwake();startHost();renderAll();}
+else{clientInit();renderAll();}
+</script>
+</body>
+</html>
